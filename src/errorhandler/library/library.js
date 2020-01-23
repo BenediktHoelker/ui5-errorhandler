@@ -20,7 +20,7 @@ sap.ui.define([
 	return {
 
 		init: function (oModels) {
-			this._oODataModel = oModels.oDataModel;
+			this._aODataModels = oModels.oDataModels;
 			this._oAppVM = oModels.appViewModel;
 			this._oMessageModel = sap.ui.getCore().getMessageManager().getMessageModel();
 
@@ -41,37 +41,40 @@ sap.ui.define([
 			return this._oResBundle;
 		},
 
-		_getODataModel: function () {
-			return this._oODataModel;
+		_getODataModels: function () {
+			return this._aODataModels;
 		},
 
 		_initializeErrorHandling: function () {
 			this.removeAllMessages();
-			const oODataModel = this._getODataModel();
+			const aODataModels = this._getODataModels();
 
-			Promise.all([this._onMetadataFailed(), this._waitForAppToBeRendered()])
-				.then(values => {
-					this._oAppVM.setProperty("/busy", false);
+			aODataModels.forEach(oODataModel => {
+				Promise.all([this._onMetadataFailed(oODataModel), this._waitForAppToBeRendered()])
+					.then(values => {
+						this._oAppVM.setProperty("/busy", false);
 
-					const oMetadataFailedError = ServiceError.createError(this._getResBundle().getText("metadataLoadingFailed"));
-					ServiceError.showAppNotUseableError(oMetadataFailedError);
+						const oMetadataFailedError = ServiceError.createError(this._getResBundle().getText("metadataLoadingFailed"));
+						ServiceError.showAppNotUseableError(oMetadataFailedError);
+					});
+
+				oODataModel.attachMessageChange(oEvent => {
+					const aNewBckndMsgs = this._getNewBckndMsgs(oEvent);
+					const oError = aNewBckndMsgs.find(oMessage => oMessage.getType() === "Error");
+					if (oError) {
+						ServiceError.showError(oError);
+					}
+					this._addedBcknMsgs = aNewBckndMsgs;
 				});
 
-			oODataModel.attachMessageChange(oEvent => {
-				const aNewBckndMsgs = this._getNewBckndMsgs(oEvent);
-				const oError = aNewBckndMsgs.find(oMessage => oMessage.getType() === "Error");
-				if (oError) {
-					ServiceError.showError(oError);
-				}
-				this._addedBcknMsgs = aNewBckndMsgs;
+				oODataModel.attachRequestFailed(oEvent => {
+					// falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
+					if (this._addedBcknMsgs.length === 0) {
+						this._showConnectionError(oEvent);
+					}
+				});
 			});
 
-			oODataModel.attachRequestFailed(oEvent => {
-				// falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
-				if (this._addedBcknMsgs.length === 0) {
-					this._showConnectionError(oEvent);
-				}
-			});
 		},
 
 		_waitForAppToBeRendered: function () {
@@ -88,8 +91,7 @@ sap.ui.define([
 			});
 		},
 
-		_onMetadataFailed: function () {
-			const oODataModel = this._getODataModel();
+		_onMetadataFailed: function (oODataModel) {
 			return new Promise(resolve => {
 				if (oODataModel.isMetadataLoadingFailed()) {
 					resolve({

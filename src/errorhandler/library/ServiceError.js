@@ -59,7 +59,6 @@ sap.ui.define([
 
 			const oNewMessage = new Message({
 				message: sMessage,
-				processor: this._oLibrary._getODataModel(),
 				type: MessageType.Error
 			});
 			const bMessageAlreadySet = aAllMessages.some(oMessage => {
