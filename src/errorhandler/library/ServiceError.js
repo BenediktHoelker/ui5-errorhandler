@@ -1,7 +1,7 @@
 sap.ui.define([
 	"sap/ui/core/message/Message",
 	"sap/m/MessageBox",
-	"sap/ui/core/MessageType",
+	"sap/ui/core/MessageType"
 ], function (Message, MessageBox, MessageType) {
 	"use strict";
 

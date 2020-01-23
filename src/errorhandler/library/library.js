@@ -1,8 +1,11 @@
 sap.ui.define([
-	"sap/ui/core/library"
-], function (library) {
+	"sap/ui/core/library",
+	"errorhandler/library/MessagePopoverFunctions",
+	"sap/ui/model/resource/ResourceModel",
+	"errorhandler/library/ServiceError",
+	"errorhandler/library/SpecialMessageUse"
+], function (library, MessagePopoverFunctions, ResourceModel, ServiceError, SpecialMessageUse) {
 	"use strict";
-
 	sap.ui.getCore().initLibrary({
 		name: "errorhandler.library",
 		version: "1.0.0",
