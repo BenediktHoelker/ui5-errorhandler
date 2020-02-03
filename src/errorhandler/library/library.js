@@ -164,8 +164,8 @@ sap.ui.define([
 		 * Dieser Fehler tritt sonst immer dann auf, wenn der MessagePopover geöffnet ist, die letzte Message entfernt wird, und
 		 * der MessagePopoverButton unsichtbar wird.
 		 */
-		removeMessagePopoverError: function (oMessagePopoverButton, oMessagePopover) {
-			MessagePopoverFunctions.removeMessagePopoverError(oMessagePopoverButton, oMessagePopover);
+		removeMessagePopoverError: function (oMessagePopoverOptions) {
+			MessagePopoverFunctions.removeMessagePopoverError(oMessagePopoverOptions.messagePopoverButton, oMessagePopoverOptions.messagePopover);
 		},
 
 		/*
