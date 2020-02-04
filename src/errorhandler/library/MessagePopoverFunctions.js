@@ -31,12 +31,22 @@ sap.ui.define([
 		},
 
 		removeMessagePopoverError: function (oMessagePopoverButton, oMessagePopover) {
-			oMessagePopoverButton.getBinding("visible").attachChange(oEvent => {
-				const bMessagesSet = sap.ui.getCore().getMessageManager().getMessageModel().getData().length > 0;
-				if (!bMessagesSet && oMessagePopover.isOpen()) {
-					oMessagePopover.close();
-				}
-			});
+			const fnRemove = () => {
+				oMessagePopoverButton.getBinding("visible").attachChange(oEvent => {
+					const bMessagesSet = sap.ui.getCore().getMessageManager().getMessageModel().getData().length > 0;
+					if (!bMessagesSet && oMessagePopover.isOpen()) {
+						oMessagePopover.close();
+					}
+				});
+			};
+
+			const oBinding = oMessagePopoverButton.getBinding("visible");
+			if (oBinding) {
+				fnRemove();
+				return;
+			}
+
+			oMessagePopoverButton.attachEventOnce("modelContextChange", fnRemove);
 		},
 
 		getMessagePopover: function () {
