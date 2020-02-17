@@ -2,5 +2,12 @@
   "deploy": {
     "destination": "FET",
     "name": "ZREUSERRORHALIB"
+  },
+  "translation": {
+    "translationDomain": "",
+    "supportedLanguages": "",
+    "defaultLanguage": "",
+    "defaultI18NPropertyFile": "",
+    "resourceModelName": ""
   }
 }

@@ -1,19 +1,19 @@
 sap.ui.define([
 	"sap/m/Button",
 	"sap/m/MessagePopover"
-], function (Button, MessagePopover) {
+], function(Button, MessagePopover) {
 	"use strict";
 
 	return {
 
-		init: function (oLibrary) {
+		init: function(oLibrary) {
 			this._oLibrary = oLibrary;
 			this._oMessagePopover = this._createMessagePopover();
 
 			return this;
 		},
 
-		_createMessagePopover: function () {
+		_createMessagePopover: function() {
 			const oMessagePopover = new MessagePopover({
 				headerButton: new Button({
 					text: this._oLibrary._getResBundle().getText("sendMail"),
@@ -30,30 +30,28 @@ sap.ui.define([
 			return oMessagePopover;
 		},
 
-		removeMessagePopoverError: function (oMessagePopoverButton, oMessagePopover) {
-			const fnRemove = () => {
+		removeMessagePopoverError: function(oMessagePopoverButton, oMessagePopover) {
+			const oBinding = oMessagePopoverButton.getBinding("visible");
+			if (oBinding) {
 				oMessagePopoverButton.getBinding("visible").attachChange(oEvent => {
 					const bMessagesSet = sap.ui.getCore().getMessageManager().getMessageModel().getData().length > 0;
 					if (!bMessagesSet && oMessagePopover.isOpen()) {
 						oMessagePopover.close();
 					}
 				});
-			};
-
-			const oBinding = oMessagePopoverButton.getBinding("visible");
-			if (oBinding) {
-				fnRemove();
 				return;
 			}
 
-			oMessagePopoverButton.attachEventOnce("modelContextChange", fnRemove);
+			oMessagePopoverButton.attachEventOnce("modelContextChange", () => {
+				this.removeMessagePopoverError(oMessagePopoverButton, oMessagePopover);
+			});
 		},
 
-		getMessagePopover: function () {
+		getMessagePopover: function() {
 			return this._oMessagePopover;
 		},
 
-		_createEmailForMessages: function () {
+		_createEmailForMessages: function() {
 			// Email-Betreff	
 			const sAppName = sap.ushell.services.AppConfiguration.getCurrentApplication().ui5ComponentName;
 			const sSubject = this._oLibrary._getResBundle().getText("mailTitle", sAppName);
@@ -73,7 +71,7 @@ sap.ui.define([
 			sap.m.URLHelper.triggerEmail(sEmailAddress, sSubject, sBody);
 		},
 
-		_getUserInformationsForEmail: function (oUserModel) {
+		_getUserInformationsForEmail: function(oUserModel) {
 			let sUserInformations;
 			// falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
 			// ansonsten wird der User aus der Shell ermittelt
@@ -90,7 +88,7 @@ sap.ui.define([
 			return sUserInformations;
 		},
 
-		_getMessageInformationsForEmail: function () {
+		_getMessageInformationsForEmail: function() {
 			const aAllMessages = sap.ui.getCore().getMessageManager().getMessageModel().getData();
 
 			let sAllMessageInformations = "";
