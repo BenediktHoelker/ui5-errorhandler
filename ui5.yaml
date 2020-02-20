@@ -1,4 +1,22 @@
-specVersion: '1.0'
+specVersion: "1.0"
 metadata:
-  name: "library"
+  name: library
 type: library
+builder:
+  customTasks:
+  - name: ui5-task-nwabap-deployer
+    afterTask: uglify
+    configuration: 
+      resources:
+        path: "dist"
+        pattern: "**/*.*"
+      connection:
+        useStrictSSL: true
+        server: http://sapfet01.frankonia.net:44300
+      ui5:
+        language: DE
+        package: Z_FIORI_REUSE
+        bspContainer: zreuserrorhalib
+        bspContainerText: Error Handler
+        calculateApplicationIndex: true
+
