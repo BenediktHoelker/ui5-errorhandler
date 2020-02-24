@@ -16,7 +16,7 @@ builder:
       ui5:
         language: DE
         package: Z_FIORI_REUSE
-        bspContainer: zreuserrorhalib
+        bspContainer: ZREUSERRORHALIB
         bspContainerText: Error Handler
         calculateApplicationIndex: true
 
