@@ -4,7 +4,8 @@
 	"private": false,
 	"devDependencies": {
 		"rimraf": "^3.0.2",
-		"ui5-task-nwabap-deployer": "^1.0.6"
+		"ui5-task-nwabap-deployer": "^1.0.6",
+		"@ui5/cli": "^1.13.1"
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified. Please add some.\" && exit 1",
@@ -15,9 +16,8 @@
 	"license": "UNLICENSED",
 	"dependencies": {
 		"@openui5/sap.ui.core": "",
-		"@openui5/themelib_sap_belize": "",
-		"@ui5/cli": "^1.13.1",
-		"nwabap-ui5uploader": "^0.3.4"
+		"rimraf": "^3.0.2",
+		"ui5-task-nwabap-deployer": "^1.0.6"
 	},
 	"ui5": {
 		"dependencies": [
