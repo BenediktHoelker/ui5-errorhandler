@@ -28,13 +28,7 @@ sap.ui.define([
 			SpecialMessageUse.init(this);
 			ServiceError.init(this);
 
-			this.dummyFunction();
-
 			this._initializeErrorHandling();
-		},
-
-		dummyFunction: function(){
-			return "Hallo";
 		},
 
 		_getResBundle: function() {
