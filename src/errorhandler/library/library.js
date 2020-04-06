@@ -21,7 +21,6 @@ sap.ui.define([
 
 		init: function(oModels) {
 			this._oAppVM = oModels.appViewModel;
-			this._oMessageModel = sap.ui.getCore().getMessageManager().getMessageModel();
 
 			MessagePopoverFunctions.init(this);
 			SpecialMessageUse.init(this);
@@ -42,7 +41,7 @@ sap.ui.define([
 
 		_initializeErrorHandling: function(aODataModels) {
 			this.removeAllMessages();
-			
+
 			aODataModels.forEach(oODataModel => {
 				Promise.all([this._onMetadataFailed(oODataModel), this._waitForAppToBeRendered()])
 					.then(values => {
@@ -148,7 +147,7 @@ sap.ui.define([
 		},
 
 		getMessageModel: function() {
-			return this._oMessageModel;
+			return sap.ui.getCore().getMessageManager().getMessageModel();
 		},
 
 		/*
