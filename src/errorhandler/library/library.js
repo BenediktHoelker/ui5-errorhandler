@@ -20,7 +20,6 @@ sap.ui.define([
 	return {
 
 		init: function(oModels) {
-			this._aODataModels = oModels.oDataModels;
 			this._oAppVM = oModels.appViewModel;
 			this._oMessageModel = sap.ui.getCore().getMessageManager().getMessageModel();
 
@@ -28,7 +27,7 @@ sap.ui.define([
 			SpecialMessageUse.init(this);
 			ServiceError.init(this);
 
-			this._initializeErrorHandling();
+			this._initializeErrorHandling(oModels.oDataModels);
 		},
 
 		_getResBundle: function() {
@@ -41,14 +40,9 @@ sap.ui.define([
 			return this._oResBundle;
 		},
 
-		_getODataModels: function() {
-			return this._aODataModels;
-		},
-
-		_initializeErrorHandling: function() {
+		_initializeErrorHandling: function(aODataModels) {
 			this.removeAllMessages();
-			const aODataModels = this._getODataModels();
-
+			
 			aODataModels.forEach(oODataModel => {
 				Promise.all([this._onMetadataFailed(oODataModel), this._waitForAppToBeRendered()])
 					.then(values => {
