@@ -98,7 +98,7 @@ sap.ui.define([
 			}
 
 			// Dublikate entfernen
-			const aUniqueMsgs = this._getUniqueMsgs(aNewBckndMsgs);
+			const aUniqueMsgs = this._getUniqueMsgs(aNewMsgs);
 
 			const aDuplicates = aNewMsgs.filter(oMsg => !aUniqueMsgs.includes(oMsg));
 			this._getBaseHandling().getMessageManager().removeMessages(aDuplicates)
