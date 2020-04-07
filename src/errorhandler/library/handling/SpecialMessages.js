@@ -33,7 +33,7 @@ sap.ui.define([
 			// das erste Label mit Text wird verwendet
 			return sap.ui.core.LabelEnablement.getReferencingLabels(oInput)
 				.map(labelId => sap.ui.getCore().byId(labelId))
-				.map(label => oLabel.label())
+				.map(label => label.getText())
 				.find(text => text);
 		},
 
