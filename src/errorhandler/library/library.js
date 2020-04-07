@@ -111,7 +111,7 @@ sap.ui.define([
 			aMessages.forEach(msg => {
 				if (!aUniqueMsgs.some(uniqueMsg => uniqueMsg.target === msg.target &&
 						(uniqueMsg.message.includes(msg.message) || msg.message.includes(uniqueMsg.message)))) {
-					aUniqueMsgs.push(oMsg);
+					aUniqueMsgs.push(msg);
 				}
 			});
 			return aUniqueMsgs;
