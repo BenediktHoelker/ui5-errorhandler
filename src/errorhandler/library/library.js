@@ -24,21 +24,22 @@ sap.ui.define([
 			appViewModel,
 			oDataModels
 		}) {
-			this._oAppVM = appViewModel;
-			this._initializeErrorHandling(oDataModels);
-		},
-
-		_getAppVM: function() {
-			return this._oAppVM;
-		},
-
-		_initializeErrorHandling: function(aODataModels) {
 			this.removeAllMessages();
+			this._initializeErrorHandling(oDataModels, appViewModel);
+		},
 
+		initForReuseComp: function({
+			componentVM,
+			oDataModels
+		}) {
+			this._initializeErrorHandling(oDataModels, componentVM);
+		},
+
+		_initializeErrorHandling: function(aODataModels, oViewModel) {
 			aODataModels.forEach(oODataModel => {
-				Promise.all([this._waitForAppToBeRendered(), this._onMetadataFailed(oODataModel)])
+				Promise.all([this._waitForAppToBeRendered(oViewModel), this._onMetadataFailed(oODataModel)])
 					.then(() => {
-						this._getAppVM().setProperty("/busy", false);
+						oViewModel.setProperty("/busy", false);
 
 						this._getServiceErrHandling().showError({
 							appUseable: false,
@@ -66,15 +67,17 @@ sap.ui.define([
 			});
 		},
 
-		_waitForAppToBeRendered: function() {
-			const oAppVM = this._getAppVM();
-
-			if (oAppVM.getProperty("/isRendered")) {
+		_waitForAppToBeRendered: function(oViewModel) {
+			if (oViewModel.getProperty("/isRendered")) {
 				return Promise.resolve();
 			}
 
 			return new Promise(resolve =>
-				oAppVM.attachPropertyChange(() => this._waitForAppToBeRendered())
+				oViewModel.attachPropertyChange(() => {
+					if (oViewModel.getProperty("/isRendered")) {
+						resolve();
+					}
+				})
 			);
 		},
 
@@ -83,9 +86,9 @@ sap.ui.define([
 				return Promise.resolve();
 			}
 
-			return new Promise(resolve => {
-				oODataModel.attachMetadataFailed(() => resolve());
-			});
+			return new Promise(resolve =>
+				oODataModel.attachMetadataFailed(() => resolve())
+			);
 		},
 
 		_getNewBckndMsgs: function(oEvent) {
