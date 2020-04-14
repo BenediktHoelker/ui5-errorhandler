@@ -22,17 +22,13 @@ sap.ui.define([
 
 		init: function({
 			appViewModel,
-			oDataModels
+			oDataModels,
+			removeAllMessages = true
 		}) {
-			this.removeAllMessages();
+			if (removeAllMessages) {
+				this.removeAllMessages();
+			}
 			this._initializeErrorHandling(oDataModels, appViewModel);
-		},
-
-		initForReuseComp: function({
-			componentVM,
-			oDataModels
-		}) {
-			this._initializeErrorHandling(oDataModels, componentVM);
 		},
 
 		_initializeErrorHandling: function(aODataModels, oViewModel) {
