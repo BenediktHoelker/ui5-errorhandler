@@ -151,10 +151,6 @@ sap.ui.define([
 			return this._oMsgPopoverHandling;
 		},
 
-		removeMessagePopoverError: function() {
-			// obsolet (nur für Kompatibilität mit 'alten' Apps)
-		},
-
 		/////////////////////////////////////////////////////////////////
 		// Basics
 		/////////////////////////////////////////////////////////////////
