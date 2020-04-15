@@ -9,7 +9,8 @@ sap.ui.define([
 
 		addValidationMsg: function({
 			input,
-			text
+			text,
+			type
 		}) {
 			// damit die Messages bei einer Änderung des Bindings automatisch entfernt werden, muss das Binding einen Typen besitzen
 			// => wird vom ControlMessageProcessor vorausgesetzt
@@ -24,7 +25,7 @@ sap.ui.define([
 				target: this._getValMsgTarget(input),
 				processor: this._getMsgProcessor(),
 				message: text,
-				type: "Error",
+				type: type,
 				validation: true
 			}));
 		},

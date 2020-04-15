@@ -182,6 +182,8 @@ sap.ui.define([
 			input,
 			text,
 			target,
+			additionalText,
+			type = "Error"
 		}) {
 			if (input && text) {
 				// Messages beziehen sich direkt auf das Control => Messages werden bei Änderungen automatisch entfernt
@@ -192,8 +194,12 @@ sap.ui.define([
 			}
 		},
 
-		removeManualValidationMessage: function(oInput) {
-			this._getSpecialMsgHandling().removeValidationMsg(oInput);
+		removeMessage: function({
+			input
+		}) {
+			if (input) {
+				this._getSpecialMsgHandling().removeValidationMsg(input);
+			}
 		},
 
 		addManualMessage: function(oParams) {
