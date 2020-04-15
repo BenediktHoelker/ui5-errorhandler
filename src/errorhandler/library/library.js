@@ -178,18 +178,18 @@ sap.ui.define([
 		// Special-Messages => manuelles Hinzufügen und Löschen
 		/////////////////////////////////////////////////////////////////
 
-		addResourceNotFoundMessage: function(oInput, sMessage) {
-			this._getSpecialMsgHandling().addValidationMsg({
-				input: oInput,
-				text: sMessage
-			});
-		},
-
-		addManualValidationMessage: function(oInput, sMessage) {
-			this._getSpecialMsgHandling().addValidationMsg({
-				input: oInput,
-				text: sMessage
-			});
+		addMessage: function({
+			input,
+			text,
+			target,
+		}) {
+			if (input && text) {
+				// Messages beziehen sich direkt auf das Control => Messages werden bei Änderungen automatisch entfernt
+				this._getSpecialMsgHandling().addValidationMsg({
+					input: input,
+					text: text
+				});
+			}
 		},
 
 		removeManualValidationMessage: function(oInput) {
