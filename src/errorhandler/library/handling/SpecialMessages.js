@@ -1,8 +1,7 @@
 sap.ui.define([
 	"errorhandler/library/handling/BaseHandling",
-	"sap/ui/core/message/Message",
-	"sap/ui/core/MessageType"
-], function(BaseHandling, Message, MessageType) {
+	"sap/ui/core/message/Message"
+], function(BaseHandling, Message) {
 	"use strict";
 
 	return BaseHandling.extend("errorhandler.library.handling.SpecialMessages", {
@@ -55,7 +54,7 @@ sap.ui.define([
 			target,
 			text,
 			additionalText,
-			type = MessageType.Error
+			type                       
 		}) {
 			if (this.hasMsgWithTarget(target)) {
 				return;

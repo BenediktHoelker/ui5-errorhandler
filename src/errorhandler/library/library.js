@@ -2,9 +2,10 @@ sap.ui.define([
 	"errorhandler/library/handling/BaseHandling",
 	"sap/ui/core/library",
 	"errorhandler/library/handling/MessagePopover",
+	"sap/ui/core/MessageType",
 	"errorhandler/library/handling/ServiceError",
 	"errorhandler/library/handling/SpecialMessages"
-], function(BaseHandling, library, MessagePopoverHandling, ServiceErrHandling, SpecialMsgHandling) {
+], function(BaseHandling, library, MessagePopoverHandling, MessageType, ServiceErrHandling, SpecialMsgHandling) {
 	"use strict";
 
 	sap.ui.getCore().initLibrary({
@@ -46,7 +47,7 @@ sap.ui.define([
 				oODataModel.attachMessageChange(oEvent => {
 					this._addedBcknMsgs = this._getNewBckndMsgs(oEvent);
 
-					const oError = this._addedBcknMsgs.find(message => message.getType() === "Error");
+					const oError = this._addedBcknMsgs.find(message => message.getType() === MessageType.Error);
 					if (oError) {
 						this._getServiceErrHandling().showError({
 							error: oError
@@ -183,35 +184,41 @@ sap.ui.define([
 			text,
 			target,
 			additionalText,
-			type = "Error"
+			type = MessageType.Error
 		}) {
+			const oSpecialMsgHandling = this._getSpecialMsgHandling();
 			if (input && text) {
 				// Messages beziehen sich direkt auf das Control => Messages werden bei Änderungen automatisch entfernt
-				this._getSpecialMsgHandling().addValidationMsg({
+				oSpecialMsgHandling.addValidationMsg({
 					input: input,
-					text: text
+					text: text,
+					type: type
+				});
+				return;
+			}
+			
+			if (target) {
+				oSpecialMsgHandling.addManualMessage({
+					target: target,
+					text: text,
+					additionalText: additionalText,
+					type: type
 				});
 			}
 		},
 
 		removeMessage: function({
-			input
+			input,
+			target
 		}) {
+			const oSpecialMsgHandling = this._getSpecialMsgHandling();
 			if (input) {
-				this._getSpecialMsgHandling().removeValidationMsg(input);
+				oSpecialMsgHandling.removeValidationMsg(input);
+				return;
 			}
-		},
-
-		addManualMessage: function(oParams) {
-			this._getSpecialMsgHandling().addManualMessage(oParams);
-		},
-
-		removeManualMessage: function(sTarget) {
-			this._getSpecialMsgHandling().removeMsgsWithTarget(sTarget);
-		},
-
-		removeMessagesWithTarget: function(sTarget) {
-			this._getSpecialMsgHandling().removeMsgsWithTarget(sTarget);
+			if (target) {
+				oSpecialMsgHandling.removeMsgsWithTarget(sTarget);
+			}
 		},
 
 		removeBckndMsgForControl: function(oInput) {
