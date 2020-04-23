@@ -1,11 +1,15 @@
 sap.ui.define([
 	"errorhandler/library/handling/BaseHandling",
+	"errorhandler/library/handling/CheckBoxHandling",
+	"errorhandler/library/handling/ImproveAdditionalTexts",
 	"sap/ui/core/library",
 	"errorhandler/library/handling/MessagePopover",
+	"errorhandler/library/handling/MessageToggling",
 	"sap/ui/core/MessageType",
 	"errorhandler/library/handling/ServiceError",
 	"errorhandler/library/handling/SpecialMessages"
-], function(BaseHandling, library, MessagePopoverHandling, MessageType, ServiceErrHandling, SpecialMsgHandling) {
+], function(BaseHandling, CheckBoxHandling, ImproveAdditionalTexts, library, MessagePopoverHandling, MessageToggling, MessageType,
+	ServiceErrHandling, SpecialMsgHandling) {
 	"use strict";
 
 	sap.ui.getCore().initLibrary({
@@ -29,12 +33,12 @@ sap.ui.define([
 			if (removeAllMessages) {
 				this.removeAllMessages();
 			}
-			this._initializeErrorHandling(oDataModels, appViewModel);
+			this._initErrorHandling(oDataModels, appViewModel);
 		},
 
-		_initializeErrorHandling: function(aODataModels, oViewModel) {
+		_initErrorHandling: function(aODataModels, oViewModel) {
 			aODataModels.forEach(oODataModel => {
-				Promise.all([this._waitForAppToBeRendered(oViewModel), this._onMetadataFailed(oODataModel)])
+				Promise.all([this._waitForAppToBeRendered(oViewModel, "/isRendered"), this._onMetadataFailed(oODataModel)])
 					.then(() => {
 						oViewModel.setProperty("/busy", false);
 
@@ -64,14 +68,14 @@ sap.ui.define([
 			});
 		},
 
-		_waitForAppToBeRendered: function(oViewModel) {
-			if (oViewModel.getProperty("/isRendered")) {
+		_waitForAppToBeRendered: function(oViewModel, sPropertyName) {
+			if (oViewModel.getProperty(sPropertyName)) {
 				return Promise.resolve();
 			}
 
 			return new Promise(resolve =>
 				oViewModel.attachPropertyChange(() => {
-					if (oViewModel.getProperty("/isRendered")) {
+					if (oViewModel.getProperty(sPropertyName)) {
 						resolve();
 					}
 				})
@@ -138,6 +142,41 @@ sap.ui.define([
 		},
 
 		/////////////////////////////////////////////////////////////////
+		// Message Improvment
+		/////////////////////////////////////////////////////////////////
+
+		initMessageImprovments: function() {
+			this._getBaseHandling().getAllControls()
+				.filter(control => control.getMetadata().getElementName() === "sap.ui.core.ComponentContainer")
+				.forEach(component => component.attachComponentCreated(event => this.initMessageImprovments()));
+
+			this._getCheckBoxHandling().showValueStateForCheckBoxes();
+			this._getImproveAdditionalTexts().improveAdditionalTexts();
+			this._getMessageToggling().toggleControlMessages();
+		},
+
+		_getCheckBoxHandling: function() {
+			if (!this._CheckBoxHandling) {
+				this._CheckBoxHandling = new CheckBoxHandling();
+			}
+			return this._CheckBoxHandling;
+		},
+
+		_getImproveAdditionalTexts: function() {
+			if (!this._ImproveAdditionalTexts) {
+				this._ImproveAdditionalTexts = new ImproveAdditionalTexts();
+			}
+			return this._ImproveAdditionalTexts;
+		},
+
+		_getMessageToggling: function() {
+			if (!this._MessageToggling) {
+				this._MessageToggling = new MessageToggling();
+			}
+			return this._MessageToggling;
+		},
+
+		/////////////////////////////////////////////////////////////////
 		// Message Popover
 		/////////////////////////////////////////////////////////////////
 
@@ -196,7 +235,7 @@ sap.ui.define([
 				});
 				return;
 			}
-			
+
 			if (target) {
 				oSpecialMsgHandling.addManualMessage({
 					target: target,

@@ -1,7 +1,8 @@
 sap.ui.define([
 	"sap/ui/base/Object",
+	"sap/ui/test/OpaPlugin",
 	"sap/ui/model/resource/ResourceModel"
-], function(Object, ResourceModel) {
+], function(Object, OpaPlugin, ResourceModel) {
 	"use strict";
 
 	return Object.extend("errorhandler.library.handling.BaseHandling", {
@@ -22,6 +23,48 @@ sap.ui.define([
 
 		getMessageManager: function() {
 			return sap.ui.getCore().getMessageManager();
+		},
+
+		getAllControls: function() {
+			const oOpaPlugin = new OpaPlugin();
+			return oOpaPlugin.getAllControls();
+		},
+
+		checkIfControlIsType: function(oControl, sType) {
+			return oControl && typeof oControl.getMetadata === "function" && typeof oControl.getMetadata().getName === "function" && oControl.getMetadata()
+				.getName() === sType;
+		},
+
+		getBindingOfControl: function(oInput) {
+			return oInput.getBinding("value") || oInput.getBinding("selected") || oInput.getBinding("selectedKey") ||
+				oInput.getBinding("dateValue");
+		},
+
+		getMessagesOfControl: function(oControl) {
+			const oBinding = this.getBindingOfControl(oControl);
+			if (!oBinding) {
+				return this._getMessagesOfSmartField(oControl);
+			}
+			return oBinding.getDataState().getMessages().concat(this._getMessagesOfSmartField(oControl));
+		},
+
+		_getMessagesOfSmartField: function(oInput) {
+			const bIsSmartfield = this.checkIfControlIsType(oInput, "sap.ui.comp.smartfield.SmartField");
+			if (bIsSmartfield && typeof oInput.getInnerControls === "function" && oInput.getInnerControls().length > 0) {
+				const oInnerControl = oInput.getInnerControls()[0];
+				const oBinding = this.getBindingOfControl(oInnerControl);
+				if (oBinding) {
+					return oBinding.getDataState().getMessages();
+				}
+
+				// falls das SmartField als nicht editabled oder nicht enabled ist, ist das innerControl ein sap.m.Text Control
+				// die Messages dieses Controls können nicht über den DataState ausgelesen werden
+				if (!oInput.getEnabled() || !oInput.getEditable()) {
+					return this.getMessageModel().getData()
+						.filter(message => message.getTarget() === oInput.getId() + "-input/value");
+				}
+			}
+			return [];
 		}
 
 	});
