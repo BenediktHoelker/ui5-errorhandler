@@ -256,7 +256,7 @@ sap.ui.define([
 				return;
 			}
 			if (target) {
-				oSpecialMsgHandling.removeMsgsWithTarget(sTarget);
+				oSpecialMsgHandling.removeMsgsWithTarget(target);
 			}
 		},
 
