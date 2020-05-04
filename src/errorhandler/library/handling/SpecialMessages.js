@@ -89,6 +89,10 @@ sap.ui.define([
 		},
 
 		removeBckndMsgForControl: function(oInput) {
+			if (!oInput.getBindingContext() || !oInput.getBinding("value")) {
+				return;
+			}
+			
 			const sBindingContextPath = oInput.getBindingContext().getPath();
 			const sProperty = oInput.getBinding("value").getPath();
 
