@@ -1,8 +1,9 @@
 sap.ui.define([
 	"errorhandler/library/handling/BaseHandling",
 	"sap/m/Button",
-	"sap/m/MessagePopover"
-], function(BaseHandling, Button, MessagePopover) {
+	"sap/m/MessagePopover",
+	"sap/m/library"
+], function(BaseHandling, Button, MessagePopover, SapMLibrary) {
 	"use strict";
 
 	return BaseHandling.extend("errorhandler.library.handling.MessagePopover", {
@@ -57,13 +58,13 @@ sap.ui.define([
 
 			const sBody = this._getUserInfos(oAppComponent.getModel("user")) + this._getMsgInfos();
 
-			sap.m.URLHelper.triggerEmail(sAddress, sSubject, sBody);
+			SapMLibrary.URLHelper.triggerEmail(sAddress, sSubject, sBody);
 		},
 
 		_getUserInfos: function(oUserModel) {
 			// falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
 			// ansonsten wird der User der Shell verwendet
-			
+
 			if (oUserModel && oUserModel.getProperty("/user")) {
 				const oUserData = oUserModel.getProperty("/user");
 				return this.getResBundle().getText("userInformationLong", [
@@ -79,7 +80,7 @@ sap.ui.define([
 
 		_getMsgInfos: function() {
 			let sAllMessages = "";
-			
+
 			this.getMessageModel().getData().forEach(message => {
 				// anstatt dem Timestamp soll Datum und Uhrzeit in leslicher Form ausgegeben werden
 				const oTime = new Date(message.date);
@@ -101,7 +102,7 @@ sap.ui.define([
 					technical: message.technical,
 					validation: message.validation
 				});
-				
+
 				sAllMessages = sAllMessages.concat(" \n ", sMessage);
 			});
 
