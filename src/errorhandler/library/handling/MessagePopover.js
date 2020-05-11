@@ -32,23 +32,6 @@ sap.ui.define([
 			return oMessagePopover;
 		},
 
-		// removeMessagePopoverError: function(oMessagePopoverButton, oMessagePopover) {
-		// 	const oBinding = oMessagePopoverButton.getBinding("visible");
-		// 	if (oBinding) {
-		// 		oMessagePopoverButton.getBinding("visible").attachChange(oEvent => {
-		// 			const bMessagesSet = this.getMessageModel().getData().length > 0;
-		// 			if (!bMessagesSet && oMessagePopover.isOpen()) {
-		// 				oMessagePopover.close();
-		// 			}
-		// 		});
-		// 		return;
-		// 	}
-
-		// 	oMessagePopoverButton.attachEventOnce("modelContextChange", () => {
-		// 		this.removeMessagePopoverError(oMessagePopoverButton, oMessagePopover);
-		// 	});
-		// },
-
 		_createEmail: function() {
 			const oBundle = this.getResBundle();
 			const oAppComponent = sap.ushell.Container.getService("AppLifeCycle").getCurrentApplication().componentInstance;
