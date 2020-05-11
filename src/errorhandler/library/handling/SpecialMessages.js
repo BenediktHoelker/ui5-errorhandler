@@ -20,9 +20,15 @@ sap.ui.define([
 				oBinding.setType(oStringType, "string");
 			}
 
+			const sTarget = this._getValMsgTarget(input);
+
+			if (this.hasMsgWithTarget(sTarget)) {
+				return;
+			}
+
 			this.getMessageManager().addMessages(new Message({
 				additionalText: this._getAdditionalText(input),
-				target: this._getValMsgTarget(input),
+				target: sTarget,
 				processor: this._getMsgProcessor(),
 				message: text,
 				type: type,
