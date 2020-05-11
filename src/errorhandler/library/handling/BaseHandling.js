@@ -40,6 +40,26 @@ sap.ui.define([
 				oInput.getBinding("dateValue");
 		},
 
+		getBindingName: function(oInput) {
+			if (oInput.getBinding("value")) {
+				return "value";
+			}
+
+			if (oInput.getBinding("selected")) {
+				return "selected";
+			}
+
+			if (oInput.getBinding("selectedKey")) {
+				return "selectedKey";
+			}
+
+			if (oInput.getBinding("dateValue")) {
+				return "dateValue";
+			}
+
+			return "";
+		},
+
 		getMessagesOfControl: function(oControl) {
 			const oBinding = this.getBindingOfControl(oControl);
 			if (!oBinding) {

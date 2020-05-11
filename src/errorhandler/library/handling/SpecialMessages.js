@@ -11,10 +11,11 @@ sap.ui.define([
 			text,
 			type
 		}) {
+			const oBinding = this.getBindingOfControl(input);
+
 			// damit die Messages bei einer Änderung des Bindings automatisch entfernt werden, muss das Binding einen Typen besitzen
 			// => wird vom ControlMessageProcessor vorausgesetzt
-			const oBinding = input.getBinding("value");
-			if (!oBinding.getType()) {
+			if (oBinding && !oBinding.getType()) {
 				const oStringType = new sap.ui.model.type.String();
 				oBinding.setType(oStringType, "string");
 			}
@@ -39,7 +40,7 @@ sap.ui.define([
 
 		_getValMsgTarget: function(oInput) {
 			const bIsSmartField = oInput.getMetadata().getElementName() === "sap.ui.comp.smartfield.SmartField";
-			return bIsSmartField ? oInput.getId() + "-input/value" : oInput.getId() + "/value";
+			return bIsSmartField ? oInput.getId() + "-input/value" : oInput.getId() + "/" + this.getBindingName(oInput);
 		},
 
 		_getMsgProcessor: function() {
@@ -54,7 +55,7 @@ sap.ui.define([
 			target,
 			text,
 			additionalText,
-			type                       
+			type
 		}) {
 			if (this.hasMsgWithTarget(target)) {
 				return;
@@ -92,7 +93,7 @@ sap.ui.define([
 			if (!oInput.getBindingContext() || !oInput.getBinding("value")) {
 				return;
 			}
-			
+
 			const sBindingContextPath = oInput.getBindingContext().getPath();
 			const sProperty = oInput.getBinding("value").getPath();
 
