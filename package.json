@@ -3,25 +3,32 @@
 	"version": "1.0.0",
 	"private": false,
 	"devDependencies": {
-		"rimraf": "^3.0.2",
-		"ui5-task-nwabap-deployer": "^1.0.6",
-		"@ui5/cli": "^1.13.1"
+		"@sap/di.code-validation.js": "1.1.6",
+		"@sap/di.code-validation.xml": "1.1.16",
+		"@ui5/cli": "2.2.2",
+		"ui5-task-nwabap-deployer": "^1.0.12",
+		"vscode-uri": "1.0.6",
+		"ui5-middleware-servestatic": "^0.2",
+		"rimraf": "^3.0.2"
+	},
+	"ui5": {
+		"dependencies": [
+			"ui5-middleware-servestatic",
+			"ui5-task-nwabap-deployer"
+		]
 	},
 	"scripts": {
-		"test": "echo \"Error: no test specified. Please add some.\" && exit 1",
-		"start": "ui5 serve -o",
-		"build": "rimraf dist && ui5 build -a",
-		"upload": "ui5 build --config ui5.yaml --exclude-task * --include-task ui5-task-nwabap-deployer"
+		"clean": "rimraf dist",
+		"build": "rimraf dist && ui5 build self-contained --include-task=generateManifestBundle generateCachebusterInfo ",
+		"build-for-deploy": "npm run build && npm run flatten && npm run clean-after-flatten",
+		"flatten": "cp -r dist/resources/errorhandler/library/* dist && cp dist/resources/errorhandler/library/.library dist && cp dist/resources/.Ui5RepositoryTextFiles dist",
+		"clean-after-flatten": "rimraf dist/resources dist/test-resources"
 	},
 	"license": "UNLICENSED",
 	"dependencies": {
 		"@openui5/sap.ui.core": "",
-		"rimraf": "^3.0.2",
-		"ui5-task-nwabap-deployer": "^1.0.6"
-	},
-	"ui5": {
-		"dependencies": [
-			"ui5-task-nwabap-deployer"
-		]
+		"@openui5/themelib_sap_belize": "",
+		"@ui5/cli": "^2.2.2",
+		"ui5-task-nwabap-deployer": "^1.0.12"
 	}
 }
