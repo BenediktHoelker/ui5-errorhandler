@@ -1,91 +1,119 @@
-sap.ui.define([
-	"errorhandler/library/handling/BaseHandling"
-], function(BaseHandling) {
-	"use strict";
+sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
+  "use strict";
 
-	return BaseHandling.extend("errorhandler.library.handling.ImproveAdditionalTexts", {
+  return BaseHandling.extend(
+    "errorhandler.library.handling.ImproveAdditionalTexts",
+    {
+      // das MessageHandling liest immer automatisch sap.ui.core.LabelEnablement.getReferencingLabels aus
+      // und benutzt den Text des Labels als AdditionalText im ErrorHandling
+      // für einige Controls ist aber das sap.ui.core.LabelEnablement.getReferencingLabels nicht gesetzt
+      // => mit dieser Methode werden die AdditionalTexts trotzdem gefüllt
 
-		// das MessageHandling liest immer automatisch sap.ui.core.LabelEnablement.getReferencingLabels aus
-		// und benutzt den Text des Labels als AdditionalText im ErrorHandling 
-		// für einige Controls ist aber das sap.ui.core.LabelEnablement.getReferencingLabels nicht gesetzt
-		// => mit dieser Methode werden die AdditionalTexts trotzdem gefüllt
+      improveAdditionalTexts: function () {
+        const aAllControls = this.getAllControls();
 
-		improveAdditionalTexts: function() {
+        const aControlsWithoutValueState = aAllControls.filter(
+          (control) =>
+            this.checkIfControlIsType(control, "sap.m.RatingIndicator") ||
+            this.checkIfControlIsType(control, "sap.m.CheckBox")
+        );
 
-			const aAllControls = this.getAllControls();
+        const aControlsWithoutDirectLabel = aAllControls.filter(
+          (control) =>
+            this.checkIfControlIsType(control, "sap.m.Input") &&
+            sap.ui.core.LabelEnablement.getReferencingLabels(control).length ===
+              0
+        );
 
-			const aControlsWithoutValueState = aAllControls
-				.filter(control => this.checkIfControlIsType(control, "sap.m.RatingIndicator") ||
-					this.checkIfControlIsType(control, "sap.m.CheckBox"));
+        const aControlsWithoutLabel = aControlsWithoutValueState.concat(
+          aControlsWithoutDirectLabel
+        );
 
-			const aControlsWithoutDirectLabel = aAllControls
-				.filter(control => this.checkIfControlIsType(control, "sap.m.Input") &&
-					sap.ui.core.LabelEnablement.getReferencingLabels(control).length === 0);
+        aControlsWithoutLabel.forEach((control) =>
+          this._improveAdditionalText(control)
+        );
 
-			const aControlsWithoutLabel = aControlsWithoutValueState.concat(aControlsWithoutDirectLabel);
+        aAllControls
+          .filter((control) =>
+            this.checkIfControlIsType(
+              control,
+              "sap.ui.comp.smartfield.SmartField"
+            )
+          )
+          .forEach((smartField) =>
+            smartField.attachInnerControlsCreated(() => {
+              if (smartField.getInnerControls().length > 0) {
+                this._improveAdditionalText(smartField.getInnerControls()[0]);
+              }
+            })
+          );
+      },
 
-			aControlsWithoutLabel
-				.forEach(control => this._improveAdditionalText(control));
+      _improveAdditionalText: function (oControl) {
+        const oBinding = this.getBindingOfControl(oControl);
+        if (!oBinding) {
+          return;
+        }
 
-			aAllControls
-				.filter(control => this.checkIfControlIsType(control, "sap.ui.comp.smartfield.SmartField"))
-				.forEach(smartField => smartField.attachInnerControlsCreated(() => {
-					if (smartField.getInnerControls().length > 0) {
-						this._improveAdditionalText(smartField.getInnerControls()[0]);
-					}
-				}));
-		},
+        oBinding.attachAggregatedDataStateChange((event) =>
+          this._addAdditionalText(oControl, oBinding)
+        );
+        oBinding.attachChange((event) =>
+          this._addAdditionalText(oControl, oBinding)
+        );
+      },
 
-		_improveAdditionalText: function(oControl) {
-			const oBinding = this.getBindingOfControl(oControl);
-			if (!oBinding) {
-				return;
-			}
+      _addAdditionalText: function (oControl, oBinding) {
+        const oMessageManager = this.getMessageManager();
+        const aMessagesWithoutAdditionalText = this.getMessagesOfControl(
+          oControl
+        ).filter((message) => !message.getAdditionalText());
+        const sAdditionalText = this._getAdditionalTextForControl(oControl);
 
-			oBinding.attachAggregatedDataStateChange(event => this._addAdditionalText(oControl, oBinding));
-			oBinding.attachChange(event => this._addAdditionalText(oControl, oBinding));
-		},
+        oMessageManager.removeMessages(aMessagesWithoutAdditionalText);
+        aMessagesWithoutAdditionalText.forEach((message) =>
+          message.setAdditionalText(sAdditionalText)
+        );
+        oMessageManager.addMessages(aMessagesWithoutAdditionalText);
+      },
 
-		_addAdditionalText: function(oControl, oBinding) {
-			const oMessageManager = this.getMessageManager();
-			const aMessagesWithoutAdditionalText = this.getMessagesOfControl(oControl).filter(message => !message.getAdditionalText());
-			const sAdditionalText = this._getAdditionalTextForControl(oControl);
+      _getAdditionalTextForControl: function (oControl) {
+        const oLabel = this._getLabelIdsForControl(oControl)
+          .map((id) => sap.ui.getCore().byId(id))
+          .find((label) => label.getText());
 
-			oMessageManager.removeMessages(aMessagesWithoutAdditionalText);
-			aMessagesWithoutAdditionalText.forEach(message => message.setAdditionalText(sAdditionalText));
-			oMessageManager.addMessages(aMessagesWithoutAdditionalText);
-		},
+        if (oLabel) {
+          return oLabel.getText();
+        }
 
-		_getAdditionalTextForControl: function(oControl) {
-			const oLabel = this._getLabelIdsForControl(oControl)
-				.map(id => sap.ui.getCore().byId(id))
-				.find(label => label.getText());
+        return "";
+      },
 
-			if (oLabel) {
-				return oLabel.getText();
-			}
+      _getLabelIdsForControl: function (oControl) {
+        const aRefLabels = sap.ui.core.LabelEnablement.getReferencingLabels(
+          oControl
+        );
+        if (aRefLabels && aRefLabels.length > 0) {
+          return aRefLabels;
+        }
 
-			return "";
-		},
+        const aAriaLabels = oControl.getAriaLabelledBy();
+        if (aAriaLabels && aAriaLabels.length > 0) {
+          return aAriaLabels;
+        }
 
-		_getLabelIdsForControl: function(oControl) {
-			const aRefLabels = sap.ui.core.LabelEnablement.getReferencingLabels(oControl);
-			if (aRefLabels && aRefLabels.length > 0) {
-				return aRefLabels;
-			}
+        if (
+          typeof oControl.getParent === "function" &&
+          this.checkIfControlIsType(
+            oControl.getParent(),
+            "sap.ui.comp.smartfield.SmartField"
+          )
+        ) {
+          return this._getLabelIdsForControl(oControl.getParent());
+        }
 
-			const aAriaLabels = oControl.getAriaLabelledBy();
-			if (aAriaLabels && aAriaLabels.length > 0) {
-				return aAriaLabels;
-			}
-
-			if (typeof oControl.getParent === "function" &&
-				this.checkIfControlIsType(oControl.getParent(), "sap.ui.comp.smartfield.SmartField")) {
-				return this._getLabelIdsForControl(oControl.getParent());
-			}
-
-			return [];
-		},
-
-	});
+        return [];
+      },
+    }
+  );
 });

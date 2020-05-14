@@ -1,280 +1,302 @@
-sap.ui.define([
-	"errorhandler/library/handling/BaseHandling",
-	"errorhandler/library/handling/CheckBoxHandling",
-	"errorhandler/library/handling/ImproveAdditionalTexts",
-	"sap/ui/core/library",
-	"errorhandler/library/handling/MessagePopover",
-	"errorhandler/library/handling/MessageToggling",
-	"sap/ui/core/MessageType",
-	"errorhandler/library/handling/ServiceError",
-	"errorhandler/library/handling/SpecialMessages"
-], function(BaseHandling, CheckBoxHandling, ImproveAdditionalTexts, library, MessagePopoverHandling, MessageToggling, MessageType,
-	ServiceErrHandling, SpecialMsgHandling) {
-	"use strict";
+sap.ui.define(
+  [
+    "../handling/BaseHandling",
+    "../handling/CheckBoxHandling",
+    "../handling/ImproveAdditionalTexts",
+    "../handling/MessagePopover",
+    "../handling/MessageToggling",
+    "../handling/ServiceError",
+    "../handling/SpecialMessages",
+  ],
+  function (
+    BaseHandling,
+    CheckBoxHandling,
+    ImproveAdditionalTexts,
+    MessagePopoverHandling,
+    MessageToggling,
+    ServiceErrHandling,
+    SpecialMsgHandling
+  ) {
+    sap.ui.getCore().initLibrary({
+      name: "errorhandler.library",
+      version: "1.0.0",
+      dependencies: ["sap.ui.core"],
+      noLibraryCSS: true,
+      types: [],
+      interfaces: [],
+      controls: [],
+      elements: [],
+    });
 
-	sap.ui.getCore().initLibrary({
-		name: "errorhandler.library",
-		version: "1.0.0",
-		dependencies: ["sap.ui.core"],
-		noLibraryCSS: true,
-		types: [],
-		interfaces: [],
-		controls: [],
-		elements: []
-	});
+    return {
+      init({ appViewModel, oDataModels, removeAllMessages = true }) {
+        if (removeAllMessages) {
+          this.removeAllMessages();
+        }
+        this._initErrorHandling(oDataModels, appViewModel);
+      },
 
-	return {
+      _initErrorHandling(aODataModels, oViewModel) {
+        aODataModels.forEach((oODataModel) => {
+          Promise.all([
+            this._waitForAppToBeRendered(oViewModel, "/isRendered"),
+            this._onMetadataFailed(oODataModel),
+          ]).then(() => {
+            oViewModel.setProperty("/busy", false);
 
-		init: function({
-			appViewModel,
-			oDataModels,
-			removeAllMessages = true
-		}) {
-			if (removeAllMessages) {
-				this.removeAllMessages();
-			}
-			this._initErrorHandling(oDataModels, appViewModel);
-		},
+            this._getServiceErrHandling().showError({
+              appUseable: false,
+              error: this._getBaseHandling()
+                .getResBundle()
+                .getText("metadataLoadingFailed"),
+            });
+          });
 
-		_initErrorHandling: function(aODataModels, oViewModel) {
-			aODataModels.forEach(oODataModel => {
-				Promise.all([this._waitForAppToBeRendered(oViewModel, "/isRendered"), this._onMetadataFailed(oODataModel)])
-					.then(() => {
-						oViewModel.setProperty("/busy", false);
+          oODataModel.attachMessageChange((oEvent) => {
+            this._addedBcknMsgs = this._getNewBckndMsgs(oEvent);
 
-						this._getServiceErrHandling().showError({
-							appUseable: false,
-							error: this._getBaseHandling().getResBundle().getText("metadataLoadingFailed")
-						});
-					});
+            const oError = this._addedBcknMsgs.find(
+              (message) => message.getType() === sap.ui.core.MessageType.Error
+            );
+            if (oError) {
+              this._getServiceErrHandling().showError({
+                error: oError,
+              });
+            }
+          });
 
-				oODataModel.attachMessageChange(oEvent => {
-					this._addedBcknMsgs = this._getNewBckndMsgs(oEvent);
+          oODataModel.attachRequestFailed((oEvent) => {
+            // falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
+            if (this._addedBcknMsgs.length === 0) {
+              this._showConnectionError(oEvent);
+            }
+          });
+        });
+      },
 
-					const oError = this._addedBcknMsgs.find(message => message.getType() === MessageType.Error);
-					if (oError) {
-						this._getServiceErrHandling().showError({
-							error: oError
-						});
-					}
-				});
+      _waitForAppToBeRendered(oViewModel, sPropertyName) {
+        if (oViewModel.getProperty(sPropertyName)) {
+          return Promise.resolve();
+        }
 
-				oODataModel.attachRequestFailed(oEvent => {
-					// falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
-					if (this._addedBcknMsgs.length === 0) {
-						this._showConnectionError(oEvent);
-					}
-				});
-			});
-		},
+        return new Promise((resolve) =>
+          oViewModel.attachPropertyChange(() => {
+            if (oViewModel.getProperty(sPropertyName)) {
+              resolve();
+            }
+          })
+        );
+      },
 
-		_waitForAppToBeRendered: function(oViewModel, sPropertyName) {
-			if (oViewModel.getProperty(sPropertyName)) {
-				return Promise.resolve();
-			}
+      _onMetadataFailed(oODataModel) {
+        if (oODataModel.isMetadataLoadingFailed()) {
+          return Promise.resolve();
+        }
 
-			return new Promise(resolve =>
-				oViewModel.attachPropertyChange(() => {
-					if (oViewModel.getProperty(sPropertyName)) {
-						resolve();
-					}
-				})
-			);
-		},
+        return new Promise((resolve) =>
+          oODataModel.attachMetadataFailed(() => resolve())
+        );
+      },
 
-		_onMetadataFailed: function(oODataModel) {
-			if (oODataModel.isMetadataLoadingFailed()) {
-				return Promise.resolve();
-			}
+      _getNewBckndMsgs(oEvent) {
+        const aNewMsgs = oEvent.getParameter("newMessages") || [];
+        if (aNewMsgs.length === 0) {
+          return aNewMsgs;
+        }
 
-			return new Promise(resolve =>
-				oODataModel.attachMetadataFailed(() => resolve())
-			);
-		},
+        // Dublikate entfernen
+        const aUniqueMsgs = this._getUniqueMsgs(aNewMsgs);
 
-		_getNewBckndMsgs: function(oEvent) {
-			const aNewMsgs = oEvent.getParameter("newMessages") || [];
-			if (aNewMsgs.length === 0) {
-				return aNewMsgs;
-			}
+        const aDuplicates = aNewMsgs.filter(
+          (oMsg) => !aUniqueMsgs.includes(oMsg)
+        );
+        this._getBaseHandling().getMessageManager().removeMessages(aDuplicates);
 
-			// Dublikate entfernen
-			const aUniqueMsgs = this._getUniqueMsgs(aNewMsgs);
+        return aUniqueMsgs;
+      },
 
-			const aDuplicates = aNewMsgs.filter(oMsg => !aUniqueMsgs.includes(oMsg));
-			this._getBaseHandling().getMessageManager().removeMessages(aDuplicates)
+      _getUniqueMsgs(aMessages) {
+        const aUniqueMsgs = [];
+        aMessages.forEach((msg) => {
+          if (
+            !aUniqueMsgs.some(
+              (uniqueMsg) =>
+                uniqueMsg.target === msg.target &&
+                (uniqueMsg.message.includes(msg.message) ||
+                  msg.message.includes(uniqueMsg.message))
+            )
+          ) {
+            aUniqueMsgs.push(msg);
+          }
+        });
+        return aUniqueMsgs;
+      },
 
-			return aUniqueMsgs;
-		},
+      _showConnectionError(oEvent) {
+        const oServiceErrHandling = this._getServiceErrHandling();
+        const oResponse = oEvent.getParameter("response");
+        const sResponseText = oResponse.responseText;
 
-		_getUniqueMsgs: function(aMessages) {
-			const aUniqueMsgs = [];
-			aMessages.forEach(msg => {
-				if (!aUniqueMsgs.some(uniqueMsg => uniqueMsg.target === msg.target &&
-						(uniqueMsg.message.includes(msg.message) || msg.message.includes(uniqueMsg.message)))) {
-					aUniqueMsgs.push(msg);
-				}
-			});
-			return aUniqueMsgs;
-		},
+        if (
+          sResponseText.includes("Timed Out") ||
+          oResponse.statusCode === 504
+        ) {
+          return oServiceErrHandling.showError({
+            error: this._getBaseHandling().getResBundle().getText("timedOut"),
+          });
+        }
 
-		_showConnectionError: function(oEvent) {
-			const oServiceErrHandling = this._getServiceErrHandling();
-			const oResponse = oEvent.getParameter("response");
-			const sResponseText = oResponse.responseText;
+        return oServiceErrHandling.showError({
+          error: sResponseText,
+        });
+      },
 
-			if (sResponseText.includes("Timed Out") || oResponse.statusCode === 504) {
-				return oServiceErrHandling.showError({
-					error: this._getBaseHandling().getResBundle().getText("timedOut")
-				});
-			}
+      _getServiceErrHandling() {
+        if (!this._oServiceErrHandling) {
+          this._oServiceErrHandling = new ServiceErrHandling();
+        }
+        return this._oServiceErrHandling;
+      },
 
-			oServiceErrHandling.showError({
-				error: sResponseText
-			});
-		},
+      // ///////////////////////////////////////////////////////////////
+      // Message Improvment
+      // ///////////////////////////////////////////////////////////////
 
-		_getServiceErrHandling: function() {
-			if (!this._oServiceErrHandling) {
-				this._oServiceErrHandling = new ServiceErrHandling();
-			}
-			return this._oServiceErrHandling;
-		},
+      initMessageImprovments() {
+        this._getBaseHandling()
+          .getAllControls()
+          .filter(
+            (control) =>
+              control.getMetadata().getElementName() ===
+              "sap.ui.core.ComponentContainer"
+          )
+          .forEach((component) =>
+            component.attachComponentCreated(() =>
+              this.initMessageImprovments()
+            )
+          );
 
-		/////////////////////////////////////////////////////////////////
-		// Message Improvment
-		/////////////////////////////////////////////////////////////////
+        this._getCheckBoxHandling().showValueStateForCheckBoxes();
+        this._getImproveAdditionalTexts().improveAdditionalTexts();
+        this._getMessageToggling().toggleControlMessages();
+      },
 
-		initMessageImprovments: function() {
-			this._getBaseHandling().getAllControls()
-				.filter(control => control.getMetadata().getElementName() === "sap.ui.core.ComponentContainer")
-				.forEach(component => component.attachComponentCreated(event => this.initMessageImprovments()));
+      _getCheckBoxHandling() {
+        if (!this._CheckBoxHandling) {
+          this._CheckBoxHandling = new CheckBoxHandling();
+        }
+        return this._CheckBoxHandling;
+      },
 
-			this._getCheckBoxHandling().showValueStateForCheckBoxes();
-			this._getImproveAdditionalTexts().improveAdditionalTexts();
-			this._getMessageToggling().toggleControlMessages();
-		},
+      _getImproveAdditionalTexts() {
+        if (!this._ImproveAdditionalTexts) {
+          this._ImproveAdditionalTexts = new ImproveAdditionalTexts();
+        }
+        return this._ImproveAdditionalTexts;
+      },
 
-		_getCheckBoxHandling: function() {
-			if (!this._CheckBoxHandling) {
-				this._CheckBoxHandling = new CheckBoxHandling();
-			}
-			return this._CheckBoxHandling;
-		},
+      _getMessageToggling() {
+        if (!this._MessageToggling) {
+          this._MessageToggling = new MessageToggling();
+        }
+        return this._MessageToggling;
+      },
 
-		_getImproveAdditionalTexts: function() {
-			if (!this._ImproveAdditionalTexts) {
-				this._ImproveAdditionalTexts = new ImproveAdditionalTexts();
-			}
-			return this._ImproveAdditionalTexts;
-		},
+      // ///////////////////////////////////////////////////////////////
+      // Message Popover
+      // ///////////////////////////////////////////////////////////////
 
-		_getMessageToggling: function() {
-			if (!this._MessageToggling) {
-				this._MessageToggling = new MessageToggling();
-			}
-			return this._MessageToggling;
-		},
+      getMessagePopover() {
+        return this._getMsgPopoverHandling().getMessagePopover();
+      },
 
-		/////////////////////////////////////////////////////////////////
-		// Message Popover
-		/////////////////////////////////////////////////////////////////
+      _getMsgPopoverHandling() {
+        if (!this._oMsgPopoverHandling) {
+          this._oMsgPopoverHandling = new MessagePopoverHandling();
+        }
+        return this._oMsgPopoverHandling;
+      },
 
-		getMessagePopover: function() {
-			return this._getMsgPopoverHandling().getMessagePopover();
-		},
+      // ///////////////////////////////////////////////////////////////
+      // Basics
+      // ///////////////////////////////////////////////////////////////
 
-		_getMsgPopoverHandling: function() {
-			if (!this._oMsgPopoverHandling) {
-				this._oMsgPopoverHandling = new MessagePopoverHandling();
-			}
-			return this._oMsgPopoverHandling;
-		},
+      setMessageManager(oView) {
+        this._getBaseHandling().getMessageManager().registerObject(oView, true);
+      },
 
-		/////////////////////////////////////////////////////////////////
-		// Basics
-		/////////////////////////////////////////////////////////////////
+      getMessageModel() {
+        return this._getBaseHandling().getMessageModel();
+      },
 
-		setMessageManager: function(oView) {
-			this._getBaseHandling().getMessageManager().registerObject(oView, true);
-		},
+      removeAllMessages() {
+        this._getBaseHandling().getMessageManager().removeAllMessages();
+      },
 
-		getMessageModel: function() {
-			return this._getBaseHandling().getMessageModel()
-		},
+      _getBaseHandling() {
+        if (!this._oBaseHandling) {
+          this._oBaseHandling = new BaseHandling();
+        }
+        return this._oBaseHandling;
+      },
 
-		removeAllMessages: function() {
-			this._getBaseHandling().getMessageManager().removeAllMessages();
-		},
+      // ///////////////////////////////////////////////////////////////
+      // Special-Messages => manuelles Hinzufügen und Löschen
+      // ///////////////////////////////////////////////////////////////
 
-		_getBaseHandling: function() {
-			if (!this._oBaseHandling) {
-				this._oBaseHandling = new BaseHandling();
-			}
-			return this._oBaseHandling;
-		},
+      addMessage({
+        input,
+        text,
+        target,
+        additionalText,
+        type = sap.ui.core.MessageType.Error,
+      }) {
+        const oSpecialMsgHandling = this._getSpecialMsgHandling();
+        if (input && text) {
+          // Messages beziehen sich direkt auf das Control => Messages werden bei Änderungen automatisch entfernt
+          oSpecialMsgHandling.addValidationMsg({
+            input,
+            text,
+            type,
+          });
+          return;
+        }
 
-		/////////////////////////////////////////////////////////////////
-		// Special-Messages => manuelles Hinzufügen und Löschen
-		/////////////////////////////////////////////////////////////////
+        if (target) {
+          oSpecialMsgHandling.addManualMessage({
+            target,
+            text,
+            additionalText,
+            type,
+          });
+        }
+      },
 
-		addMessage: function({
-			input,
-			text,
-			target,
-			additionalText,
-			type = MessageType.Error
-		}) {
-			const oSpecialMsgHandling = this._getSpecialMsgHandling();
-			if (input && text) {
-				// Messages beziehen sich direkt auf das Control => Messages werden bei Änderungen automatisch entfernt
-				oSpecialMsgHandling.addValidationMsg({
-					input: input,
-					text: text,
-					type: type
-				});
-				return;
-			}
+      removeMessage({ input, target }) {
+        const oSpecialMsgHandling = this._getSpecialMsgHandling();
+        if (input) {
+          oSpecialMsgHandling.removeValidationMsg(input);
+          return;
+        }
+        if (target) {
+          oSpecialMsgHandling.removeMsgsWithTarget(target);
+        }
+      },
 
-			if (target) {
-				oSpecialMsgHandling.addManualMessage({
-					target: target,
-					text: text,
-					additionalText: additionalText,
-					type: type
-				});
-			}
-		},
+      removeBckndMsgForControl(oInput) {
+        this._getSpecialMsgHandling().removeBckndMsgForControl(oInput);
+      },
 
-		removeMessage: function({
-			input,
-			target
-		}) {
-			const oSpecialMsgHandling = this._getSpecialMsgHandling();
-			if (input) {
-				oSpecialMsgHandling.removeValidationMsg(input);
-				return;
-			}
-			if (target) {
-				oSpecialMsgHandling.removeMsgsWithTarget(target);
-			}
-		},
+      hasMessageWithTarget(sTarget) {
+        return this._getSpecialMsgHandling().hasMsgWithTarget(sTarget);
+      },
 
-		removeBckndMsgForControl: function(oInput) {
-			this._getSpecialMsgHandling().removeBckndMsgForControl(oInput);
-		},
-
-		hasMessageWithTarget: function(sTarget) {
-			return this._getSpecialMsgHandling().hasMsgWithTarget(sTarget);
-		},
-
-		_getSpecialMsgHandling: function() {
-			if (!this._SpecialMsgHandling) {
-				this._SpecialMsgHandling = new SpecialMsgHandling();
-			}
-			return this._SpecialMsgHandling;
-		},
-
-	};
-
-}, /* bExport= */ false);
+      _getSpecialMsgHandling() {
+        if (!this._SpecialMsgHandling) {
+          this._SpecialMsgHandling = new SpecialMsgHandling();
+        }
+        return this._SpecialMsgHandling;
+      },
+    };
+  }
+);
