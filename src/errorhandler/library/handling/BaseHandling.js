@@ -1,91 +1,111 @@
-sap.ui.define([
-	"sap/ui/base/Object",
-	"sap/ui/test/OpaPlugin",
-	"sap/ui/model/resource/ResourceModel"
-], function(Object, OpaPlugin, ResourceModel) {
-	"use strict";
+sap.ui.define(
+  [
+    "sap/ui/base/Object",
+    "sap/ui/test/OpaPlugin",
+    "sap/ui/model/resource/ResourceModel",
+  ],
+  function (Object, OpaPlugin, ResourceModel) {
+    return Object.extend("errorhandler.library.handling.BaseHandling", {
+      getResBundle() {
+        if (!this.resBundle) {
+          this.resBundle = new ResourceModel({
+            bundleName: "errorhandler.library.i18n.i18n",
+          });
+        }
+        return this.resBundle;
+      },
 
-	return Object.extend("errorhandler.library.handling.BaseHandling", {
+      getMessageModel() {
+        return this.getMessageManager().getMessageModel();
+      },
 
-		getResBundle: function() {
-			if (!this._oResBundle) {
-				const oResourceModel = new ResourceModel({
-					bundleName: "errorhandler.library.i18n.i18n"
-				});
-				this._oResBundle = oResourceModel.getResourceBundle();
-			}
-			return this._oResBundle;
-		},
+      getMessageManager() {
+        return sap.ui.getCore().getMessageManager();
+      },
 
-		getMessageModel: function() {
-			return this.getMessageManager().getMessageModel();
-		},
+      getAllControls() {
+        const oOpaPlugin = new OpaPlugin();
+        return oOpaPlugin.getAllControls();
+      },
 
-		getMessageManager: function() {
-			return sap.ui.getCore().getMessageManager();
-		},
+      checkIfControlIsType(oControl, sType) {
+        return (
+          oControl &&
+          typeof oControl.getMetadata === "function" &&
+          typeof oControl.getMetadata().getName === "function" &&
+          oControl.getMetadata().getName() === sType
+        );
+      },
 
-		getAllControls: function() {
-			const oOpaPlugin = new OpaPlugin();
-			return oOpaPlugin.getAllControls();
-		},
+      getBindingOfControl(oInput) {
+        return (
+          oInput.getBinding("value") ||
+          oInput.getBinding("selected") ||
+          oInput.getBinding("selectedKey") ||
+          oInput.getBinding("dateValue")
+        );
+      },
 
-		checkIfControlIsType: function(oControl, sType) {
-			return oControl && typeof oControl.getMetadata === "function" && typeof oControl.getMetadata().getName === "function" && oControl.getMetadata()
-				.getName() === sType;
-		},
+      getBindingName(oInput) {
+        if (oInput.getBinding("value")) {
+          return "value";
+        }
 
-		getBindingOfControl: function(oInput) {
-			return oInput.getBinding("value") || oInput.getBinding("selected") || oInput.getBinding("selectedKey") ||
-				oInput.getBinding("dateValue");
-		},
+        if (oInput.getBinding("selected")) {
+          return "selected";
+        }
 
-		getBindingName: function(oInput) {
-			if (oInput.getBinding("value")) {
-				return "value";
-			}
+        if (oInput.getBinding("selectedKey")) {
+          return "selectedKey";
+        }
 
-			if (oInput.getBinding("selected")) {
-				return "selected";
-			}
+        if (oInput.getBinding("dateValue")) {
+          return "dateValue";
+        }
 
-			if (oInput.getBinding("selectedKey")) {
-				return "selectedKey";
-			}
+        return "";
+      },
 
-			if (oInput.getBinding("dateValue")) {
-				return "dateValue";
-			}
+      getMessagesOfControl(oControl) {
+        const oBinding = this.getBindingOfControl(oControl);
+        if (!oBinding) {
+          return this.getMessagesOfSmartField(oControl);
+        }
+        return oBinding
+          .getDataState()
+          .getMessages()
+          .concat(this.getMessagesOfSmartField(oControl));
+      },
 
-			return "";
-		},
+      getMessagesOfSmartField(oInput) {
+        const bIsSmartfield = this.checkIfControlIsType(
+          oInput,
+          "sap.ui.comp.smartfield.SmartField"
+        );
+        if (
+          bIsSmartfield &&
+          typeof oInput.getInnerControls === "function" &&
+          oInput.getInnerControls().length > 0
+        ) {
+          const oInnerControl = oInput.getInnerControls()[0];
+          const oBinding = this.getBindingOfControl(oInnerControl);
+          if (oBinding) {
+            return oBinding.getDataState().getMessages();
+          }
 
-		getMessagesOfControl: function(oControl) {
-			const oBinding = this.getBindingOfControl(oControl);
-			if (!oBinding) {
-				return this._getMessagesOfSmartField(oControl);
-			}
-			return oBinding.getDataState().getMessages().concat(this._getMessagesOfSmartField(oControl));
-		},
-
-		_getMessagesOfSmartField: function(oInput) {
-			const bIsSmartfield = this.checkIfControlIsType(oInput, "sap.ui.comp.smartfield.SmartField");
-			if (bIsSmartfield && typeof oInput.getInnerControls === "function" && oInput.getInnerControls().length > 0) {
-				const oInnerControl = oInput.getInnerControls()[0];
-				const oBinding = this.getBindingOfControl(oInnerControl);
-				if (oBinding) {
-					return oBinding.getDataState().getMessages();
-				}
-
-				// falls das SmartField als nicht editabled oder nicht enabled ist, ist das innerControl ein sap.m.Text Control
-				// die Messages dieses Controls können nicht über den DataState ausgelesen werden
-				if (!oInput.getEnabled() || !oInput.getEditable()) {
-					return this.getMessageModel().getData()
-						.filter(message => message.getTarget() === oInput.getId() + "-input/value");
-				}
-			}
-			return [];
-		}
-
-	});
-});
+          // falls das SmartField als nicht editabled oder nicht enabled ist, ist das innerControl ein sap.m.Text Control
+          // die Messages dieses Controls können nicht über den DataState ausgelesen werden
+          if (!oInput.getEnabled() || !oInput.getEditable()) {
+            return this.getMessageModel()
+              .getData()
+              .filter(
+                (message) =>
+                  message.getTarget() === `${oInput.getId()}-input/value`
+              );
+          }
+        }
+        return [];
+      },
+    });
+  }
+);

@@ -10,13 +10,13 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
         .forEach((checkbox) =>
           checkbox.attachSelect((event) => {
             const oCheckBox = event.getSource();
-            oCheckBox.setValueState(this._getValueStateOfCheckBox(oCheckBox));
+            oCheckBox.setValueState(this.getValueStateOfCheckBox(oCheckBox));
             oCheckBox.rerender();
           })
         );
     },
 
-    _getValueStateOfCheckBox(oCheckBox) {
+    getValueStateOfCheckBox(oCheckBox) {
       const aMessages = oCheckBox
         .getBinding("selected")
         .getDataState()

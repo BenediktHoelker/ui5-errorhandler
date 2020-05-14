@@ -28,7 +28,7 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
         );
 
         aControlsWithoutLabel.forEach((control) =>
-          this._improveAdditionalText(control)
+          this.improveAdditionalText(control)
         );
 
         aAllControls
@@ -41,32 +41,30 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
           .forEach((smartField) =>
             smartField.attachInnerControlsCreated(() => {
               if (smartField.getInnerControls().length > 0) {
-                this._improveAdditionalText(smartField.getInnerControls()[0]);
+                this.improveAdditionalText(smartField.getInnerControls()[0]);
               }
             })
           );
       },
 
-      _improveAdditionalText(oControl) {
+      improveAdditionalText(oControl) {
         const oBinding = this.getBindingOfControl(oControl);
         if (!oBinding) {
           return;
         }
 
         oBinding.attachAggregatedDataStateChange(() =>
-          this._addAdditionalText(oControl, oBinding)
+          this.addAdditionalText(oControl, oBinding)
         );
-        oBinding.attachChange(() =>
-          this._addAdditionalText(oControl, oBinding)
-        );
+        oBinding.attachChange(() => this.addAdditionalText(oControl, oBinding));
       },
 
-      _addAdditionalText(oControl) {
+      addAdditionalText(oControl) {
         const oMessageManager = this.getMessageManager();
         const aMessagesWithoutAdditionalText = this.getMessagesOfControl(
           oControl
         ).filter((message) => !message.getAdditionalText());
-        const sAdditionalText = this._getAdditionalTextForControl(oControl);
+        const sAdditionalText = this.getAdditionalTextForControl(oControl);
 
         oMessageManager.removeMessages(aMessagesWithoutAdditionalText);
         aMessagesWithoutAdditionalText.forEach((message) =>
@@ -75,8 +73,8 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
         oMessageManager.addMessages(aMessagesWithoutAdditionalText);
       },
 
-      _getAdditionalTextForControl(oControl) {
-        const oLabel = this._getLabelIdsForControl(oControl)
+      getAdditionalTextForControl(oControl) {
+        const oLabel = this.getLabelIdsForControl(oControl)
           .map((id) => sap.ui.getCore().byId(id))
           .find((label) => label.getText());
 
@@ -87,7 +85,7 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
         return "";
       },
 
-      _getLabelIdsForControl(oControl) {
+      getLabelIdsForControl(oControl) {
         const aRefLabels = sap.ui.core.LabelEnablement.getReferencingLabels(
           oControl
         );
@@ -107,7 +105,7 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
             "sap.ui.comp.smartfield.SmartField"
           )
         ) {
-          return this._getLabelIdsForControl(oControl.getParent());
+          return this.getLabelIdsForControl(oControl.getParent());
         }
 
         return [];

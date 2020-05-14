@@ -14,20 +14,20 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
                 (control) => control.getBinding("visible") === event.getSource()
               )
               .forEach((control) =>
-                this._toggleMessageOfControl(control, control.getVisible())
+                this.toggleMessageOfControl(control, control.getVisible())
               );
           })
         );
     },
 
-    _toggleMessageOfControl(oControl, bIsVisible) {
-      const aInvisibleMessages = this._getInvisibleMessages();
+    toggleMessageOfControl(oControl, bIsVisible) {
+      const aInvisibleMessages = this.getInvisibleMessages();
       const oMessageManager = this.getMessageManager();
 
       if (bIsVisible) {
         oMessageManager.addMessages(aInvisibleMessages[oControl.getId()]);
         delete aInvisibleMessages[oControl.getId()];
-        this._setInvisibleMessages(aInvisibleMessages);
+        this.setInvisibleMessages(aInvisibleMessages);
         return;
       }
 
@@ -35,19 +35,19 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
       if (aMessages.length > 0) {
         aInvisibleMessages[oControl.getId()] = aMessages;
         oMessageManager.removeMessages(aMessages);
-        this._setInvisibleMessages(aInvisibleMessages);
+        this.setInvisibleMessages(aInvisibleMessages);
       }
     },
 
-    _getInvisibleMessages() {
-      if (this._mInvisibleMessages === undefined) {
-        this._mInvisibleMessages = {};
+    getInvisibleMessages() {
+      if (this.mInvisibleMessages === undefined) {
+        this.mInvisibleMessages = {};
       }
-      return this._mInvisibleMessages;
+      return this.mInvisibleMessages;
     },
 
-    _setInvisibleMessages(aInvisibleMessages) {
-      this._mInvisibleMessages = aInvisibleMessages;
+    setInvisibleMessages(aInvisibleMessages) {
+      this.mInvisibleMessages = aInvisibleMessages;
     },
   });
 });

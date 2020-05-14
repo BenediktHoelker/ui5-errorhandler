@@ -23,10 +23,5 @@
 		"flatten": "cp -r dist/resources/errorhandler/library/* dist && cp dist/resources/errorhandler/library/.library dist && cp dist/resources/.Ui5RepositoryTextFiles dist",
 		"clean-after-flatten": "rimraf dist/resources dist/test-resources"
 	},
-	"license": "UNLICENSED",
-	"ui5": {
-		"dependencies": [
-			"ui5-task-nwabap-deployer"
-		]
-	}
+	"license": "UNLICENSED"
 }

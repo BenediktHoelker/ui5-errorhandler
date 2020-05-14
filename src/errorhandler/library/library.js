@@ -1,12 +1,12 @@
 sap.ui.define(
   [
-    "../handling/BaseHandling",
-    "../handling/CheckBoxHandling",
-    "../handling/ImproveAdditionalTexts",
-    "../handling/MessagePopover",
-    "../handling/MessageToggling",
-    "../handling/ServiceError",
-    "../handling/SpecialMessages",
+    "./handling/BaseHandling",
+    "./handling/CheckBoxHandling",
+    "./handling/ImproveAdditionalTexts",
+    "./handling/MessagePopover",
+    "./handling/MessageToggling",
+    "./handling/ServiceError",
+    "./handling/SpecialMessages",
   ],
   function (
     BaseHandling,
@@ -33,49 +33,50 @@ sap.ui.define(
         if (removeAllMessages) {
           this.removeAllMessages();
         }
-        this._initErrorHandling(oDataModels, appViewModel);
+
+        this.initErrorHandling(oDataModels, appViewModel);
       },
 
-      _initErrorHandling(aODataModels, oViewModel) {
-        aODataModels.forEach((oODataModel) => {
+      initErrorHandling(ODataModels, viewModel) {
+        ODataModels.forEach((model) => {
           Promise.all([
-            this._waitForAppToBeRendered(oViewModel, "/isRendered"),
-            this._onMetadataFailed(oODataModel),
+            this.waitForAppToBeRendered(viewModel, "/isRendered"),
+            this.onMetadataFailed(model),
           ]).then(() => {
-            oViewModel.setProperty("/busy", false);
+            viewModel.setProperty("/busy", false);
 
-            this._getServiceErrHandling().showError({
+            this.getServiceErrHandling().showError({
               appUseable: false,
-              error: this._getBaseHandling()
+              error: this.getBaseHandling()
                 .getResBundle()
                 .getText("metadataLoadingFailed"),
             });
           });
 
-          oODataModel.attachMessageChange((oEvent) => {
-            this._addedBcknMsgs = this._getNewBckndMsgs(oEvent);
+          model.attachMessageChange((oEvent) => {
+            this.backendMessages = this.getNewBckndMsgs(oEvent);
 
-            const oError = this._addedBcknMsgs.find(
+            const error = this.backendMessages.find(
               (message) => message.getType() === sap.ui.core.MessageType.Error
             );
 
-            if (oError) {
-              this._getServiceErrHandling().showError({
-                error: oError,
+            if (error) {
+              this.getServiceErrHandling().showError({
+                error,
               });
             }
           });
 
-          oODataModel.attachRequestFailed((oEvent) => {
+          model.attachRequestFailed((oEvent) => {
             // falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
-            if (this._addedBcknMsgs.length === 0) {
-              this._showConnectionError(oEvent);
+            if (this.backendMessages.length === 0) {
+              this.showConnectionError(oEvent);
             }
           });
         });
       },
 
-      _waitForAppToBeRendered(oViewModel, sPropertyName) {
+      waitForAppToBeRendered(oViewModel, sPropertyName) {
         if (oViewModel.getProperty(sPropertyName)) {
           return Promise.resolve();
         }
@@ -89,7 +90,7 @@ sap.ui.define(
         );
       },
 
-      _onMetadataFailed(oODataModel) {
+      onMetadataFailed(oODataModel) {
         if (oODataModel.isMetadataLoadingFailed()) {
           return Promise.resolve();
         }
@@ -99,42 +100,29 @@ sap.ui.define(
         );
       },
 
-      _getNewBckndMsgs(oEvent) {
+      getNewBckndMsgs(oEvent) {
         const aNewMsgs = oEvent.getParameter("newMessages") || [];
-        if (aNewMsgs.length === 0) {
-          return aNewMsgs;
-        }
 
         // Dublikate entfernen
-        const aUniqueMsgs = this._getUniqueMsgs(aNewMsgs);
+        const aUniqueMsgs = this.getUniqueMsgs(aNewMsgs);
 
         const aDuplicates = aNewMsgs.filter(
           (oMsg) => !aUniqueMsgs.includes(oMsg)
         );
-        this._getBaseHandling().getMessageManager().removeMessages(aDuplicates);
+
+        this.getBaseHandling().getMessageManager().removeMessages(aDuplicates);
 
         return aUniqueMsgs;
       },
 
-      _getUniqueMsgs(aMessages) {
-        const aUniqueMsgs = [];
-        aMessages.forEach((msg) => {
-          if (
-            !aUniqueMsgs.some(
-              (uniqueMsg) =>
-                uniqueMsg.target === msg.target &&
-                (uniqueMsg.message.includes(msg.message) ||
-                  msg.message.includes(uniqueMsg.message))
-            )
-          ) {
-            aUniqueMsgs.push(msg);
-          }
-        });
-        return aUniqueMsgs;
+      getUniqueMsgs(messages) {
+        return [new Set(messages.map((o) => JSON.stringify(o)))].map((s) =>
+          JSON.parse(s)
+        );
       },
 
-      _showConnectionError(oEvent) {
-        const oServiceErrHandling = this._getServiceErrHandling();
+      showConnectionError(oEvent) {
+        const oServiceErrHandling = this.getServiceErrHandling();
         const oResponse = oEvent.getParameter("response");
         const sResponseText = oResponse.responseText;
 
@@ -143,7 +131,7 @@ sap.ui.define(
           oResponse.statusCode === 504
         ) {
           return oServiceErrHandling.showError({
-            error: this._getBaseHandling().getResBundle().getText("timedOut"),
+            error: this.getBaseHandling().getResBundle().getText("timedOut"),
           });
         }
 
@@ -152,11 +140,11 @@ sap.ui.define(
         });
       },
 
-      _getServiceErrHandling() {
-        if (!this._oServiceErrHandling) {
-          this._oServiceErrHandling = new ServiceErrHandling();
+      getServiceErrHandling() {
+        if (!this.oServiceErrHandling) {
+          this.oServiceErrHandling = new ServiceErrHandling();
         }
-        return this._oServiceErrHandling;
+        return this.oServiceErrHandling;
       },
 
       // ///////////////////////////////////////////////////////////////
@@ -164,7 +152,7 @@ sap.ui.define(
       // ///////////////////////////////////////////////////////////////
 
       initMessageImprovments() {
-        this._getBaseHandling()
+        this.getBaseHandling()
           .getAllControls()
           .filter(
             (control) =>
@@ -177,30 +165,30 @@ sap.ui.define(
             )
           );
 
-        this._getCheckBoxHandling().showValueStateForCheckBoxes();
-        this._getImproveAdditionalTexts().improveAdditionalTexts();
-        this._getMessageToggling().toggleControlMessages();
+        this.getCheckBoxHandling().showValueStateForCheckBoxes();
+        this.getImproveAdditionalTexts().improveAdditionalTexts();
+        this.getMessageToggling().toggleControlMessages();
       },
 
-      _getCheckBoxHandling() {
-        if (!this._CheckBoxHandling) {
-          this._CheckBoxHandling = new CheckBoxHandling();
+      getCheckBoxHandling() {
+        if (!this.CheckBoxHandling) {
+          this.CheckBoxHandling = new CheckBoxHandling();
         }
-        return this._CheckBoxHandling;
+        return this.CheckBoxHandling;
       },
 
-      _getImproveAdditionalTexts() {
-        if (!this._ImproveAdditionalTexts) {
-          this._ImproveAdditionalTexts = new ImproveAdditionalTexts();
+      getImproveAdditionalTexts() {
+        if (!this.ImproveAdditionalTexts) {
+          this.ImproveAdditionalTexts = new ImproveAdditionalTexts();
         }
-        return this._ImproveAdditionalTexts;
+        return this.ImproveAdditionalTexts;
       },
 
-      _getMessageToggling() {
-        if (!this._MessageToggling) {
-          this._MessageToggling = new MessageToggling();
+      getMessageToggling() {
+        if (!this.MessageToggling) {
+          this.MessageToggling = new MessageToggling();
         }
-        return this._MessageToggling;
+        return this.MessageToggling;
       },
 
       // ///////////////////////////////////////////////////////////////
@@ -208,14 +196,14 @@ sap.ui.define(
       // ///////////////////////////////////////////////////////////////
 
       getMessagePopover() {
-        return this._getMsgPopoverHandling().getMessagePopover();
+        return this.getMsgPopoverHandling().getMessagePopover();
       },
 
-      _getMsgPopoverHandling() {
-        if (!this._oMsgPopoverHandling) {
-          this._oMsgPopoverHandling = new MessagePopoverHandling();
+      getMsgPopoverHandling() {
+        if (!this.oMsgPopoverHandling) {
+          this.oMsgPopoverHandling = new MessagePopoverHandling();
         }
-        return this._oMsgPopoverHandling;
+        return this.oMsgPopoverHandling;
       },
 
       // ///////////////////////////////////////////////////////////////
@@ -223,22 +211,22 @@ sap.ui.define(
       // ///////////////////////////////////////////////////////////////
 
       setMessageManager(oView) {
-        this._getBaseHandling().getMessageManager().registerObject(oView, true);
+        this.getBaseHandling().getMessageManager().registerObject(oView, true);
       },
 
       getMessageModel() {
-        return this._getBaseHandling().getMessageModel();
+        return this.getBaseHandling().getMessageModel();
       },
 
       removeAllMessages() {
-        this._getBaseHandling().getMessageManager().removeAllMessages();
+        this.getBaseHandling().getMessageManager().removeAllMessages();
       },
 
-      _getBaseHandling() {
-        if (!this._oBaseHandling) {
-          this._oBaseHandling = new BaseHandling();
+      getBaseHandling() {
+        if (!this.oBaseHandling) {
+          this.oBaseHandling = new BaseHandling();
         }
-        return this._oBaseHandling;
+        return this.oBaseHandling;
       },
 
       // ///////////////////////////////////////////////////////////////
@@ -252,7 +240,7 @@ sap.ui.define(
         additionalText,
         type = sap.ui.core.MessageType.Error,
       }) {
-        const oSpecialMsgHandling = this._getSpecialMsgHandling();
+        const oSpecialMsgHandling = this.getSpecialMsgHandling();
         if (input && text) {
           // Messages beziehen sich direkt auf das Control => Messages werden bei Änderungen automatisch entfernt
           oSpecialMsgHandling.addValidationMsg({
@@ -274,7 +262,7 @@ sap.ui.define(
       },
 
       removeMessage({ input, target }) {
-        const oSpecialMsgHandling = this._getSpecialMsgHandling();
+        const oSpecialMsgHandling = this.getSpecialMsgHandling();
         if (input) {
           oSpecialMsgHandling.removeValidationMsg(input);
           return;
@@ -285,18 +273,18 @@ sap.ui.define(
       },
 
       removeBckndMsgForControl(oInput) {
-        this._getSpecialMsgHandling().removeBckndMsgForControl(oInput);
+        this.getSpecialMsgHandling().removeBckndMsgForControl(oInput);
       },
 
       hasMessageWithTarget(sTarget) {
-        return this._getSpecialMsgHandling().hasMsgWithTarget(sTarget);
+        return this.getSpecialMsgHandling().hasMsgWithTarget(sTarget);
       },
 
-      _getSpecialMsgHandling() {
-        if (!this._SpecialMsgHandling) {
-          this._SpecialMsgHandling = new SpecialMsgHandling();
+      getSpecialMsgHandling() {
+        if (!this.SpecialMsgHandling) {
+          this.SpecialMsgHandling = new SpecialMsgHandling();
         }
-        return this._SpecialMsgHandling;
+        return this.SpecialMsgHandling;
       },
     };
   }
