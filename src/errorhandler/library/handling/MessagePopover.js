@@ -6,17 +6,15 @@ sap.ui.define(
     "sap/m/library",
   ],
   function (BaseHandling, Button, MessagePopover, SapMLibrary) {
-    "use strict";
-
     return BaseHandling.extend("errorhandler.library.handling.MessagePopover", {
-      getMessagePopover: function () {
+      getMessagePopover() {
         if (!this._oMessagePopover) {
           this._oMessagePopover = this._createMessagePopover();
         }
         return this._oMessagePopover;
       },
 
-      _createMessagePopover: function () {
+      _createMessagePopover() {
         const oMessagePopover = new MessagePopover({
           headerButton: new Button({
             text: this.getResBundle().getText("sendMail"),
@@ -36,7 +34,7 @@ sap.ui.define(
         return oMessagePopover;
       },
 
-      _createEmail: function () {
+      _createEmail() {
         const oBundle = this.getResBundle();
         const oAppComponent = sap.ushell.Container.getService(
           "AppLifeCycle"
@@ -55,7 +53,7 @@ sap.ui.define(
         SapMLibrary.URLHelper.triggerEmail(sAddress, sSubject, sBody);
       },
 
-      _getUserInfos: function (oUserModel) {
+      _getUserInfos(oUserModel) {
         // falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
         // ansonsten wird der User der Shell verwendet
 
@@ -75,7 +73,7 @@ sap.ui.define(
         );
       },
 
-      _getMsgInfos: function () {
+      _getMsgInfos() {
         let sAllMessages = "";
 
         this.getMessageModel()

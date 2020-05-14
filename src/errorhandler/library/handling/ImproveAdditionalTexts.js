@@ -1,6 +1,4 @@
 sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
-  "use strict";
-
   return BaseHandling.extend(
     "errorhandler.library.handling.ImproveAdditionalTexts",
     {
@@ -9,7 +7,7 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
       // für einige Controls ist aber das sap.ui.core.LabelEnablement.getReferencingLabels nicht gesetzt
       // => mit dieser Methode werden die AdditionalTexts trotzdem gefüllt
 
-      improveAdditionalTexts: function () {
+      improveAdditionalTexts() {
         const aAllControls = this.getAllControls();
 
         const aControlsWithoutValueState = aAllControls.filter(
@@ -49,21 +47,21 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
           );
       },
 
-      _improveAdditionalText: function (oControl) {
+      _improveAdditionalText(oControl) {
         const oBinding = this.getBindingOfControl(oControl);
         if (!oBinding) {
           return;
         }
 
-        oBinding.attachAggregatedDataStateChange((event) =>
+        oBinding.attachAggregatedDataStateChange(() =>
           this._addAdditionalText(oControl, oBinding)
         );
-        oBinding.attachChange((event) =>
+        oBinding.attachChange(() =>
           this._addAdditionalText(oControl, oBinding)
         );
       },
 
-      _addAdditionalText: function (oControl, oBinding) {
+      _addAdditionalText(oControl) {
         const oMessageManager = this.getMessageManager();
         const aMessagesWithoutAdditionalText = this.getMessagesOfControl(
           oControl
@@ -77,7 +75,7 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
         oMessageManager.addMessages(aMessagesWithoutAdditionalText);
       },
 
-      _getAdditionalTextForControl: function (oControl) {
+      _getAdditionalTextForControl(oControl) {
         const oLabel = this._getLabelIdsForControl(oControl)
           .map((id) => sap.ui.getCore().byId(id))
           .find((label) => label.getText());
@@ -89,7 +87,7 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
         return "";
       },
 
-      _getLabelIdsForControl: function (oControl) {
+      _getLabelIdsForControl(oControl) {
         const aRefLabels = sap.ui.core.LabelEnablement.getReferencingLabels(
           oControl
         );

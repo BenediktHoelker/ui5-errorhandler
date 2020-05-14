@@ -58,6 +58,7 @@ sap.ui.define(
             const oError = this._addedBcknMsgs.find(
               (message) => message.getType() === sap.ui.core.MessageType.Error
             );
+
             if (oError) {
               this._getServiceErrHandling().showError({
                 error: oError,

@@ -6,10 +6,8 @@ sap.ui.define(
     "sap/ui/core/MessageType",
   ],
   function (BaseHandling, Message, MessageBox, MessageType) {
-    "use strict";
-
     return BaseHandling.extend("errorhandler.library.handling.ServiceError", {
-      showError: function ({ appUseable = true, error }) {
+      showError({ appUseable = true, error }) {
         const oError = this._getError(error);
 
         if (
@@ -26,9 +24,9 @@ sap.ui.define(
 
         const sText = appUseable
           ? oError.message
-          : oError.message +
-            " " +
-            this.getResBundle().getText("navToLaunchpad");
+          : `${oError.message} ${this.getResBundle().getText(
+              "navToLaunchpad"
+            )}`;
 
         this._ErrorIsShown = true;
         MessageBox.error(sText, {
@@ -49,7 +47,7 @@ sap.ui.define(
         });
       },
 
-      _getError: function (error) {
+      _getError(error) {
         if (typeof error === "object") {
           return error;
         }
