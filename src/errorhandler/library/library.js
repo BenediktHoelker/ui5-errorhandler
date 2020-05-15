@@ -29,12 +29,12 @@ sap.ui.define(
     });
 
     return {
-      init({ appViewModel, oDataModels, removeAllMessages = true }) {
+      init({ appViewModel, ODataModels, removeAllMessages = true }) {
         if (removeAllMessages) {
           this.removeAllMessages();
         }
 
-        this.initErrorHandling(oDataModels, appViewModel);
+        this.initErrorHandling(ODataModels, appViewModel);
       },
 
       initErrorHandling(ODataModels, viewModel) {
@@ -45,11 +45,11 @@ sap.ui.define(
           ]).then(() => {
             viewModel.setProperty("/busy", false);
 
-            this.getServiceErrHandling().showError({
+            ServiceErrHandling.showError({
               appUseable: false,
-              error: this.getBaseHandling()
-                .getResBundle()
-                .getText("metadataLoadingFailed"),
+              error: BaseHandling.getResBundle().getText(
+                "metadataLoadingFailed"
+              ),
             });
           });
 
@@ -61,58 +61,56 @@ sap.ui.define(
             );
 
             if (error) {
-              this.getServiceErrHandling().showError({
+              ServiceErrHandling.showError({
                 error,
               });
             }
           });
 
-          model.attachRequestFailed((oEvent) => {
+          model.attachRequestFailed((event) => {
             // falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
             if (this.backendMessages.length === 0) {
-              this.showConnectionError(oEvent);
+              this.showConnectionError(event);
             }
           });
         });
       },
 
-      waitForAppToBeRendered(oViewModel, sPropertyName) {
-        if (oViewModel.getProperty(sPropertyName)) {
+      waitForAppToBeRendered(viewModel, property) {
+        if (viewModel.getProperty(property)) {
           return Promise.resolve();
         }
 
         return new Promise((resolve) =>
-          oViewModel.attachPropertyChange(() => {
-            if (oViewModel.getProperty(sPropertyName)) {
+          viewModel.attachPropertyChange(() => {
+            if (viewModel.getProperty(property)) {
               resolve();
             }
           })
         );
       },
 
-      onMetadataFailed(oODataModel) {
-        if (oODataModel.isMetadataLoadingFailed()) {
+      onMetadataFailed(ODataModel) {
+        if (ODataModel.isMetadataLoadingFailed()) {
           return Promise.resolve();
         }
 
         return new Promise((resolve) =>
-          oODataModel.attachMetadataFailed(() => resolve())
+          ODataModel.attachMetadataFailed(() => resolve())
         );
       },
 
-      getNewBckndMsgs(oEvent) {
-        const aNewMsgs = oEvent.getParameter("newMessages") || [];
+      getNewBckndMsgs(event) {
+        const newMessages = event.getParameter("newMessages") || [];
+        const uniqueMessages = this.getUniqueMsgs(newMessages);
 
-        // Dublikate entfernen
-        const aUniqueMsgs = this.getUniqueMsgs(aNewMsgs);
-
-        const aDuplicates = aNewMsgs.filter(
-          (oMsg) => !aUniqueMsgs.includes(oMsg)
+        const duplicates = newMessages.filter(
+          (msg) => !uniqueMessages.includes(msg)
         );
 
-        this.getBaseHandling().getMessageManager().removeMessages(aDuplicates);
+        BaseHandling.getMessageManager().removeMessages(duplicates);
 
-        return aUniqueMsgs;
+        return uniqueMessages;
       },
 
       getUniqueMsgs(messages) {
@@ -121,30 +119,19 @@ sap.ui.define(
         );
       },
 
-      showConnectionError(oEvent) {
-        const oServiceErrHandling = this.getServiceErrHandling();
-        const oResponse = oEvent.getParameter("response");
-        const sResponseText = oResponse.responseText;
+      showConnectionError(event) {
+        const response = event.getParameter("response");
+        const { responseText } = response;
 
-        if (
-          sResponseText.includes("Timed Out") ||
-          oResponse.statusCode === 504
-        ) {
-          return oServiceErrHandling.showError({
-            error: this.getBaseHandling().getResBundle().getText("timedOut"),
+        if (responseText.includes("Timed Out") || response.statusCode === 504) {
+          return ServiceErrHandling.showError({
+            error: BaseHandling.getResBundle().getText("timedOut"),
           });
         }
 
-        return oServiceErrHandling.showError({
-          error: sResponseText,
+        return ServiceErrHandling.showError({
+          error: responseText,
         });
-      },
-
-      getServiceErrHandling() {
-        if (!this.oServiceErrHandling) {
-          this.oServiceErrHandling = new ServiceErrHandling();
-        }
-        return this.oServiceErrHandling;
       },
 
       // ///////////////////////////////////////////////////////////////
@@ -152,8 +139,7 @@ sap.ui.define(
       // ///////////////////////////////////////////////////////////////
 
       initMessageImprovments() {
-        this.getBaseHandling()
-          .getAllControls()
+        BaseHandling.getAllControls()
           .filter(
             (control) =>
               control.getMetadata().getElementName() ===
@@ -165,30 +151,9 @@ sap.ui.define(
             )
           );
 
-        this.getCheckBoxHandling().showValueStateForCheckBoxes();
-        this.getImproveAdditionalTexts().improveAdditionalTexts();
-        this.getMessageToggling().toggleControlMessages();
-      },
-
-      getCheckBoxHandling() {
-        if (!this.CheckBoxHandling) {
-          this.CheckBoxHandling = new CheckBoxHandling();
-        }
-        return this.CheckBoxHandling;
-      },
-
-      getImproveAdditionalTexts() {
-        if (!this.ImproveAdditionalTexts) {
-          this.ImproveAdditionalTexts = new ImproveAdditionalTexts();
-        }
-        return this.ImproveAdditionalTexts;
-      },
-
-      getMessageToggling() {
-        if (!this.MessageToggling) {
-          this.MessageToggling = new MessageToggling();
-        }
-        return this.MessageToggling;
+        CheckBoxHandling.showValueStateForCheckBoxes();
+        ImproveAdditionalTexts.improveAdditionalTexts();
+        MessageToggling.toggleControlMessages();
       },
 
       // ///////////////////////////////////////////////////////////////
@@ -196,37 +161,23 @@ sap.ui.define(
       // ///////////////////////////////////////////////////////////////
 
       getMessagePopover() {
-        return this.getMsgPopoverHandling().getMessagePopover();
-      },
-
-      getMsgPopoverHandling() {
-        if (!this.oMsgPopoverHandling) {
-          this.oMsgPopoverHandling = new MessagePopoverHandling();
-        }
-        return this.oMsgPopoverHandling;
+        return MessagePopoverHandling.getMessagePopover();
       },
 
       // ///////////////////////////////////////////////////////////////
       // Basics
       // ///////////////////////////////////////////////////////////////
 
-      setMessageManager(oView) {
-        this.getBaseHandling().getMessageManager().registerObject(oView, true);
+      setMessageManager(view) {
+        BaseHandling.getMessageManager().registerObject(view, true);
       },
 
       getMessageModel() {
-        return this.getBaseHandling().getMessageModel();
+        return BaseHandling.getMessageModel();
       },
 
       removeAllMessages() {
-        this.getBaseHandling().getMessageManager().removeAllMessages();
-      },
-
-      getBaseHandling() {
-        if (!this.oBaseHandling) {
-          this.oBaseHandling = new BaseHandling();
-        }
-        return this.oBaseHandling;
+        BaseHandling.getMessageManager().removeAllMessages();
       },
 
       // ///////////////////////////////////////////////////////////////
@@ -240,10 +191,9 @@ sap.ui.define(
         additionalText,
         type = sap.ui.core.MessageType.Error,
       }) {
-        const oSpecialMsgHandling = this.getSpecialMsgHandling();
         if (input && text) {
           // Messages beziehen sich direkt auf das Control => Messages werden bei Änderungen automatisch entfernt
-          oSpecialMsgHandling.addValidationMsg({
+          SpecialMsgHandling.addValidationMsg({
             input,
             text,
             type,
@@ -252,7 +202,7 @@ sap.ui.define(
         }
 
         if (target) {
-          oSpecialMsgHandling.addManualMessage({
+          SpecialMsgHandling.addManualMessage({
             target,
             text,
             additionalText,
@@ -262,29 +212,21 @@ sap.ui.define(
       },
 
       removeMessage({ input, target }) {
-        const oSpecialMsgHandling = this.getSpecialMsgHandling();
         if (input) {
-          oSpecialMsgHandling.removeValidationMsg(input);
+          SpecialMsgHandling.removeValidationMsg(input);
           return;
         }
         if (target) {
-          oSpecialMsgHandling.removeMsgsWithTarget(target);
+          SpecialMsgHandling.removeMsgsWithTarget(target);
         }
       },
 
       removeBckndMsgForControl(oInput) {
-        this.getSpecialMsgHandling().removeBckndMsgForControl(oInput);
+        SpecialMsgHandling.removeBckndMsgForControl(oInput);
       },
 
       hasMessageWithTarget(sTarget) {
-        return this.getSpecialMsgHandling().hasMsgWithTarget(sTarget);
-      },
-
-      getSpecialMsgHandling() {
-        if (!this.SpecialMsgHandling) {
-          this.SpecialMsgHandling = new SpecialMsgHandling();
-        }
-        return this.SpecialMsgHandling;
+        return SpecialMsgHandling.hasMsgWithTarget(sTarget);
       },
     };
   }
