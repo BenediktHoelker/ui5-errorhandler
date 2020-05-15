@@ -156,7 +156,7 @@ sap.ui.define(
             )
           );
 
-        CheckBoxHandling.showValueStateForCheckBoxes();
+        CheckBoxHandling.setShowValueStateForAllCheckBoxes();
         AdditionalTexts.improveAdditionalTexts();
         MessageToggling.toggleControlMessages();
       },
