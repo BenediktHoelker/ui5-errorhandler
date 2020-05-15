@@ -20,83 +20,83 @@ sap.ui.define(
       },
 
       getAllControls() {
-        const oOpaPlugin = new OpaPlugin();
-        return oOpaPlugin.getAllControls();
+        const OPAPlugin = new OpaPlugin();
+        return OPAPlugin.getAllControls();
       },
 
-      checkIfControlIsType(oControl, sType) {
+      checkIfControlIsType(control, sType) {
         return (
-          oControl &&
-          typeof oControl.getMetadata === "function" &&
-          typeof oControl.getMetadata().getName === "function" &&
-          oControl.getMetadata().getName() === sType
+          control &&
+          typeof control.getMetadata === "function" &&
+          typeof control.getMetadata().getName === "function" &&
+          control.getMetadata().getName() === sType
         );
       },
 
-      getBindingOfControl(oInput) {
+      getBindingOfControl(control) {
         return (
-          oInput.getBinding("value") ||
-          oInput.getBinding("selected") ||
-          oInput.getBinding("selectedKey") ||
-          oInput.getBinding("dateValue")
+          control.getBinding("value") ||
+          control.getBinding("selected") ||
+          control.getBinding("selectedKey") ||
+          control.getBinding("dateValue")
         );
       },
 
-      getBindingName(oInput) {
-        if (oInput.getBinding("value")) {
+      getBindingName(control) {
+        if (control.getBinding("value")) {
           return "value";
         }
 
-        if (oInput.getBinding("selected")) {
+        if (control.getBinding("selected")) {
           return "selected";
         }
 
-        if (oInput.getBinding("selectedKey")) {
+        if (control.getBinding("selectedKey")) {
           return "selectedKey";
         }
 
-        if (oInput.getBinding("dateValue")) {
+        if (control.getBinding("dateValue")) {
           return "dateValue";
         }
 
         return "";
       },
 
-      getMessagesOfControl(oControl) {
-        const oBinding = this.getBindingOfControl(oControl);
-        if (!oBinding) {
-          return this.getMessagesOfSmartField(oControl);
+      getMessagesOfControl(control) {
+        const binding = this.getBindingOfControl(control);
+        if (!binding) {
+          return this.getMessagesOfSmartField(control);
         }
-        return oBinding
+        return binding
           .getDataState()
           .getMessages()
-          .concat(this.getMessagesOfSmartField(oControl));
+          .concat(this.getMessagesOfSmartField(control));
       },
 
-      getMessagesOfSmartField(oInput) {
-        const bIsSmartfield = this.checkIfControlIsType(
-          oInput,
+      getMessagesOfSmartField(control) {
+        const isSmartField = this.checkIfControlIsType(
+          control,
           "sap.ui.comp.smartfield.SmartField"
         );
         if (
-          bIsSmartfield &&
-          typeof oInput.getInnerControls === "function" &&
-          oInput.getInnerControls().length > 0
+          isSmartField &&
+          typeof control.getInnerControls === "function" &&
+          control.getInnerControls().length > 0
         ) {
-          const oInnerControl = oInput.getInnerControls()[0];
-          const oBinding = this.getBindingOfControl(oInnerControl);
-          if (oBinding) {
-            return oBinding.getDataState().getMessages();
+          const innerControl = control.getInnerControls()[0];
+          const binding = this.getBindingOfControl(innerControl);
+          if (binding) {
+            return binding.getDataState().getMessages();
           }
 
           // falls das SmartField als nicht editabled oder nicht enabled ist, ist das innerControl ein sap.m.Text Control
           // die Messages dieses Controls können nicht über den DataState ausgelesen werden
-          if (!oInput.getEnabled() || !oInput.getEditable()) {
+          if (!control.getEnabled() || !control.getEditable()) {
             return this.getMessageModel()
               .getData()
               .filter(
                 (message) =>
-                  message.getTarget() === `${oInput.getId()}-input/value`
+                  message.getTarget() === `${control.getId()}-input/value`
               );
           }
         }

@@ -216,18 +216,12 @@ sap.ui.define(
         }
       },
 
-      removeMessage({ input, target }) {
-        if (input) {
-          SpecialMsgHandling.removeValidationMsg(input);
-          return;
-        }
-        if (target) {
-          SpecialMsgHandling.removeMsgsWithTarget(target);
-        }
+      removeMessage(options) {
+        SpecialMsgHandling.removeValidationMsg(options);
       },
 
-      removeBckndMsgForControl(oInput) {
-        SpecialMsgHandling.removeBckndMsgForControl(oInput);
+      removeBckndMsgForControl(control) {
+        SpecialMsgHandling.removeBckndMsgForControl(control);
       },
 
       hasMessageWithTarget(sTarget) {

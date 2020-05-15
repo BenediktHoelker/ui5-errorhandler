@@ -2,26 +2,27 @@ sap.ui.define(
   ["../handling/BaseHandler", "sap/ui/core/message/Message"],
   function (BaseHandler, Message) {
     return {
-      addValidationMsg({ input, text, type }) {
-        const oBinding = BaseHandler.getBindingOfControl(input);
-
+      addValidationMsg({
+        input,
+        text,
+        type,
+        binding = BaseHandler.getBindingOfControl(input),
+        target = this.getValMsgTarget(input),
+      }) {
         // damit die Messages bei einer Änderung des Bindings automatisch entfernt werden, muss das Binding einen Typen besitzen
         // => wird vom ControlMessageProcessor vorausgesetzt
-        if (oBinding && !oBinding.getType()) {
-          const oStringType = new sap.ui.model.type.String();
-          oBinding.setType(oStringType, "string");
+        if (binding && !binding.getType()) {
+          binding.setType(new sap.ui.model.type.String(), "string");
         }
 
-        const sTarget = this.getValMsgTarget(input);
-
-        if (this.hasMsgWithTarget(sTarget)) {
+        if (this.hasMsgWithTarget(target)) {
           return;
         }
 
         BaseHandler.getMessageManager().addMessages(
           new Message({
             additionalText: this.getAdditionalText(input),
-            target: sTarget,
+            target,
             processor: this.getMsgProcessor(),
             message: text,
             type,
@@ -30,31 +31,33 @@ sap.ui.define(
         );
       },
 
-      getAdditionalText(oInput) {
+      getAdditionalText(input) {
         // das erste Label mit Text wird verwendet
-        return sap.ui.core.LabelEnablement.getReferencingLabels(oInput)
+        return sap.ui.core.LabelEnablement.getReferencingLabels(input)
           .map((labelId) => sap.ui.getCore().byId(labelId))
           .map((label) => label.getText())
           .find((text) => text);
       },
 
-      getValMsgTarget(oInput) {
+      getValMsgTarget(input) {
         const bIsSmartField =
-          oInput.getMetadata().getElementName() ===
+          input.getMetadata().getElementName() ===
           "sap.ui.comp.smartfield.SmartField";
         return bIsSmartField
-          ? `${oInput.getId()}-input/value`
-          : `${oInput.getId()}/${this.getBindingName(oInput)}`;
+          ? `${input.getId()}-input/value`
+          : `${input.getId()}/${this.getBindingName(input)}`;
       },
 
       getMsgProcessor() {
-        if (!this.oMsgProcessor) {
-          this.oMsgProcessor = new sap.ui.core.message.ControlMessageProcessor();
+        if (!this.msgProcessor) {
+          this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
+
           BaseHandler.getMessageManager().registerMessageProcessor(
-            this.oMsgProcessor
+            this.msgProcessor
           );
         }
-        return this.oMsgProcessor;
+
+        return this.msgProcessor;
       },
 
       addManualMessage({ target, text, additionalText, type }) {
@@ -72,43 +75,35 @@ sap.ui.define(
         );
       },
 
-      removeValidationMsg(oInput) {
-        this._removeMsgsWithTarget(this.getValMsgTarget(oInput));
-      },
-
-      removeMsgsWithTarget(sTarget) {
-        this._removeMsgsWithTarget(sTarget);
-      },
-
-      _removeMsgsWithTarget(sTarget) {
+      removeValidationMsg({ control, target = this.getValMsgTarget(control) }) {
         this.getMessageManager().removeMessages(
-          this.getMsgsWithTarget(sTarget)
+          BaseHandler.getMsgsWithTarget(target)
         );
       },
 
-      getMsgsWithTarget(sTarget) {
-        return BaseHandler.getMessageModel()
+      getMsgsWithTarget(target) {
+        BaseHandler.getMessageModel()
           .getData()
-          .filter((message) => message.target === sTarget);
+          .filter((msg) => msg.target === target);
       },
 
       hasMsgWithTarget(sTarget) {
         return this.getMsgsWithTarget(sTarget).length > 0;
       },
 
-      removeBckndMsgForControl(oInput) {
-        if (!oInput.getBindingcdContext() || !oInput.getBinding("value")) {
+      removeBckndMsgForControl(input) {
+        if (!input.getBindingContext() || !input.getBinding("value")) {
           return;
         }
 
-        const sBindingContextPath = oInput.getBindingContext().getPath();
-        const sProperty = oInput.getBinding("value").getPath();
+        const path = input.getBindingContext().getPath();
+        const property = input.getBinding("value").getPath();
 
-        const aBindingMessages = oInput
+        const messages = input
           .getModel()
-          .getMessagesByPath(`${sBindingContextPath}/${sProperty}`);
+          .getMessagesByPath(`${path}/${property}`);
 
-        BaseHandler.getMessageManager().removeMessages(aBindingMessages);
+        BaseHandler.getMessageManager().removeMessages(messages);
       },
     };
   }

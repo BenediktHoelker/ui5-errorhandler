@@ -74,7 +74,7 @@ sap.ui.define(["../handling/BaseHandler"], (BaseHandler) => {
     },
 
     getAdditionalTextForControl(control) {
-      const label = BaseHandler.getLabelIdsForControl(control)
+      const label = this.getLabelIdsForControl(control)
         .map((id) => sap.ui.getCore().byId(id))
         .find((lbl) => lbl.getText());
 
