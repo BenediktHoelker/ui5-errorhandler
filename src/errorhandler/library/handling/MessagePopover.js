@@ -14,7 +14,7 @@ sap.ui.define(
           headerButton: new Button({
             text: this.getResBundle().getText("sendMail"),
             press: () => {
-              this.createEmail(this);
+              this.triggerEmail(this);
             },
           }),
           items: {
@@ -29,7 +29,7 @@ sap.ui.define(
         return messagePopover;
       },
 
-      createEmail() {
+      triggerEmail() {
         const bundle = this.getResBundle();
         const appComponent = sap.ushell.Container.getService(
           "AppLifeCycle"
