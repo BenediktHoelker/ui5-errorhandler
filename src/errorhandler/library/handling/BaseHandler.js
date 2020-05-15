@@ -1,11 +1,7 @@
 sap.ui.define(
-  [
-    "sap/ui/base/Object",
-    "sap/ui/test/OpaPlugin",
-    "sap/ui/model/resource/ResourceModel",
-  ],
-  function (Object, OpaPlugin, ResourceModel) {
-    return Object.extend("errorhandler.library.handling.BaseHandling", {
+  ["sap/ui/test/OpaPlugin", "sap/ui/model/resource/ResourceModel"],
+  function (OpaPlugin, ResourceModel) {
+    return {
       getResBundle() {
         if (!this.resBundle) {
           this.resBundle = new ResourceModel({
@@ -106,6 +102,6 @@ sap.ui.define(
         }
         return [];
       },
-    });
+    };
   }
 );

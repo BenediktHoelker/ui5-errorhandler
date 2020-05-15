@@ -1,7 +1,7 @@
 sap.ui.define(
   [
-    "./handling/BaseHandling",
-    "./handling/CheckBoxHandling",
+    "./handling/BaseHandler",
+    "./handling/CheckBox",
     "./handling/ImproveAdditionalTexts",
     "./handling/MessagePopover",
     "./handling/MessageToggling",
@@ -9,7 +9,7 @@ sap.ui.define(
     "./handling/SpecialMessages",
   ],
   function (
-    BaseHandling,
+    BaseHandler,
     CheckBoxHandling,
     ImproveAdditionalTexts,
     MessagePopoverHandling,
@@ -29,7 +29,12 @@ sap.ui.define(
     });
 
     return {
-      init({ appViewModel, ODataModels, removeAllMessages = true }) {
+      init({
+        appViewModel,
+        oDataModels,
+        ODataModels = oDataModels,
+        removeAllMessages = true,
+      }) {
         if (removeAllMessages) {
           this.removeAllMessages();
         }
@@ -47,7 +52,7 @@ sap.ui.define(
 
             ServiceErrHandling.showError({
               appUseable: false,
-              error: BaseHandling.getResBundle().getText(
+              error: BaseHandler.getResBundle().getText(
                 "metadataLoadingFailed"
               ),
             });
@@ -108,15 +113,15 @@ sap.ui.define(
           (msg) => !uniqueMessages.includes(msg)
         );
 
-        BaseHandling.getMessageManager().removeMessages(duplicates);
+        BaseHandler.getMessageManager().removeMessages(duplicates);
 
         return uniqueMessages;
       },
 
       getUniqueMsgs(messages) {
-        return [new Set(messages.map((o) => JSON.stringify(o)))].map((s) =>
-          JSON.parse(s)
-        );
+        return Array.from(
+          new Set(messages.map((msg) => JSON.stringify(msg)))
+        ).map((string) => JSON.parse(string));
       },
 
       showConnectionError(event) {
@@ -125,7 +130,7 @@ sap.ui.define(
 
         if (responseText.includes("Timed Out") || response.statusCode === 504) {
           return ServiceErrHandling.showError({
-            error: BaseHandling.getResBundle().getText("timedOut"),
+            error: BaseHandler.getResBundle().getText("timedOut"),
           });
         }
 
@@ -139,7 +144,7 @@ sap.ui.define(
       // ///////////////////////////////////////////////////////////////
 
       initMessageImprovments() {
-        BaseHandling.getAllControls()
+        BaseHandler.getAllControls()
           .filter(
             (control) =>
               control.getMetadata().getElementName() ===
@@ -169,15 +174,15 @@ sap.ui.define(
       // ///////////////////////////////////////////////////////////////
 
       setMessageManager(view) {
-        BaseHandling.getMessageManager().registerObject(view, true);
+        BaseHandler.getMessageManager().registerObject(view, true);
       },
 
       getMessageModel() {
-        return BaseHandling.getMessageModel();
+        return BaseHandler.getMessageModel();
       },
 
       removeAllMessages() {
-        BaseHandling.getMessageManager().removeAllMessages();
+        BaseHandler.getMessageManager().removeAllMessages();
       },
 
       // ///////////////////////////////////////////////////////////////

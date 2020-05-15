@@ -1,11 +1,11 @@
-sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
-  return BaseHandling.extend("errorhandler.library.handling.CheckBoxHandling", {
+sap.ui.define(["../handling/BaseHandler"], function (BaseHandler) {
+  return {
     // der ValueState einer Checkbox wird, im Gegensatz zu den anderen Controls dem Benutzer ohne besondere Behandlung nicht dargestellt
 
     showValueStateForCheckBoxes() {
-      this.getAllControls()
+      BaseHandler.getAllControls()
         .filter((control) =>
-          this.checkIfControlIsType(control, "sap.m.CheckBox")
+          BaseHandler.checkIfControlIsType(control, "sap.m.CheckBox")
         )
         .forEach((checkbox) =>
           checkbox.attachSelect((event) => {
@@ -23,5 +23,5 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
         .getControlMessages();
       return aMessages.length > 0 ? aMessages[0].getType() : "None";
     },
-  });
+  };
 });

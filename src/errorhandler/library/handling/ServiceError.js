@@ -1,20 +1,20 @@
 sap.ui.define(
   [
-    "../handling/BaseHandling",
+    "../handling/BaseHandler",
     "sap/ui/core/message/Message",
     "sap/m/MessageBox",
   ],
-  function (BaseHandling, Message, MessageBox) {
-    return BaseHandling.extend("errorhandler.library.handling.ServiceError", {
+  function (BaseHandler, Message, MessageBox) {
+    return {
       showError({ appUseable = true, error }) {
         const oError = this.getError(error);
 
         if (
-          !this.getMessageModel()
+          !BaseHandler.getMessageModel()
             .getData()
             .some((msg) => msg.message === oError.message)
         ) {
-          this.getMessageManager().addMessages(oError);
+          BaseHandler.getMessageManager().addMessages(oError);
         }
 
         if (appUseable && this.ErrorIsShown) {
@@ -23,15 +23,15 @@ sap.ui.define(
 
         const sText = appUseable
           ? oError.message
-          : `${oError.message} ${this.getResBundle().getText(
+          : `${oError.message} ${BaseHandler.getResBundle().getText(
               "navToLaunchpad"
             )}`;
 
-        this.ErrorIsShown = true;
+        BaseHandler.ErrorIsShown = true;
         MessageBox.error(sText, {
           actions: [MessageBox.Action.CLOSE],
           onClose: () => {
-            this.ErrorIsShown = false;
+            BaseHandler.ErrorIsShown = false;
             if (!appUseable) {
               const oCrossAppNavigator = sap.ushell.Container.getService(
                 "CrossApplicationNavigation"
@@ -56,6 +56,6 @@ sap.ui.define(
           type: sap.ui.core.MessageType.Error,
         });
       },
-    });
+    };
   }
 );

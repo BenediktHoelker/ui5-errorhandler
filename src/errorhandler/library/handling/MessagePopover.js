@@ -1,12 +1,12 @@
 sap.ui.define(
   [
-    "../handling/BaseHandling",
+    "../handling/BaseHandler",
     "sap/m/Button",
     "sap/m/MessagePopover",
     "sap/m/library",
   ],
-  function (BaseHandling, Button, MessagePopover, SapMLibrary) {
-    return BaseHandling.extend("errorhandler.library.handling.MessagePopover", {
+  function (BaseHandler, Button, MessagePopover, SapMLibrary) {
+    return {
       getMessagePopover() {
         if (!this.oMessagePopover) {
           this.oMessagePopover = this.createMessagePopover();
@@ -105,6 +105,6 @@ sap.ui.define(
 
         return sAllMessages;
       },
-    });
+    };
   }
 );

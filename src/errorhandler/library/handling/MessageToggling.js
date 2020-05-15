@@ -1,15 +1,15 @@
-sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
-  return BaseHandling.extend("errorhandler.library.handling.MessageToggling", {
+sap.ui.define(["../handling/BaseHandler"], function (BaseHandler) {
+  return {
     // die Messages aller Controls sollen nur angezeigt werden wenn das Control visible ist
     // falls sich das visible-Binding ändert sollen die Messages nicht mehr / wieder angezeigt werden
 
     toggleControlMessages() {
-      this.getAllControls()
+      BaseHandler.getAllControls()
         .map((control) => control.getBinding("visible"))
         .filter((binding) => !!binding)
         .forEach((binding) =>
           binding.attachChange((event) => {
-            this.getAllControls()
+            BaseHandler.getAllControls()
               .filter(
                 (control) => control.getBinding("visible") === event.getSource()
               )
@@ -49,5 +49,5 @@ sap.ui.define(["../handling/BaseHandling"], function (BaseHandling) {
     setInvisibleMessages(aInvisibleMessages) {
       this.mInvisibleMessages = aInvisibleMessages;
     },
-  });
+  };
 });
