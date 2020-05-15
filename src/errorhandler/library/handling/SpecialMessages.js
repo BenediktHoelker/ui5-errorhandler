@@ -79,7 +79,7 @@ sap.ui.define(
         },
 
         removeMsgsWithTarget(sTarget) {
-          this.removeMsgsWithTarget(sTarget);
+          this._removeMsgsWithTarget(sTarget);
         },
 
         _removeMsgsWithTarget(sTarget) {
@@ -99,7 +99,7 @@ sap.ui.define(
         },
 
         removeBckndMsgForControl(oInput) {
-          if (!oInput.getBindingContext() || !oInput.getBinding("value")) {
+          if (!oInput.getBindingcdContext() || !oInput.getBinding("value")) {
             return;
           }
 
