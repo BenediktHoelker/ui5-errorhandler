@@ -2,7 +2,7 @@ sap.ui.define(
   [
     "./handling/BaseHandler",
     "./handling/CheckBox",
-    "./handling/ImproveAdditionalTexts",
+    "./handling/AdditionalTexts",
     "./handling/MessagePopover",
     "./handling/MessageToggling",
     "./handling/ServiceError",
@@ -11,7 +11,7 @@ sap.ui.define(
   function (
     BaseHandler,
     CheckBoxHandling,
-    ImproveAdditionalTexts,
+    AdditionalTexts,
     MessagePopoverHandling,
     MessageToggling,
     ServiceErrHandling,
@@ -157,7 +157,7 @@ sap.ui.define(
           );
 
         CheckBoxHandling.showValueStateForCheckBoxes();
-        ImproveAdditionalTexts.improveAdditionalTexts();
+        AdditionalTexts.improveAdditionalTexts();
         MessageToggling.toggleControlMessages();
       },
 

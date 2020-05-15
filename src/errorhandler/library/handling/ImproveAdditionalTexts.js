@@ -60,15 +60,15 @@ sap.ui.define(["../handling/BaseHandler"], (BaseHandler) => {
 
     addAdditionalText(control) {
       const messageManager = BaseHandler.getMessageManager();
+      const additionalText = this.getAdditionalTextForControl(control);
+
       const messagesWithoutAdditionalText = BaseHandler.getMessagesOfControl(
         control
       ).filter((message) => !message.getAdditionalText());
 
-      const sAdditionalText = this.getAdditionalTextForControl(control);
-
       messageManager.removeMessages(messagesWithoutAdditionalText);
       messagesWithoutAdditionalText.forEach((message) =>
-        message.setAdditionalText(sAdditionalText)
+        message.setAdditionalText(additionalText)
       );
       messageManager.addMessages(messagesWithoutAdditionalText);
     },
