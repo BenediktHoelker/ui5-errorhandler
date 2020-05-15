@@ -9,19 +9,19 @@ sap.ui.define(["../handling/BaseHandler"], function (BaseHandler) {
         )
         .forEach((checkbox) =>
           checkbox.attachSelect((event) => {
-            const oCheckBox = event.getSource();
-            oCheckBox.setValueState(this.getValueStateOfCheckBox(oCheckBox));
-            oCheckBox.rerender();
+            const checkBox = event.getSource();
+            checkBox.setValueState(this.getValueStateOfCheckBox(checkBox));
+            checkBox.rerender();
           })
         );
     },
 
-    getValueStateOfCheckBox(oCheckBox) {
-      const aMessages = oCheckBox
+    getValueStateOfCheckBox(checkBox) {
+      const messages = checkBox
         .getBinding("selected")
         .getDataState()
         .getControlMessages();
-      return aMessages.length > 0 ? aMessages[0].getType() : "None";
+      return messages.length > 0 ? messages[0].getType() : "None";
     },
   };
 });
