@@ -6,37 +6,40 @@ sap.ui.define(
   ],
   function (BaseHandler, Message, MessageBox) {
     return {
-      showError({ appUseable = true, error }) {
-        const oError = this.getError(error);
-
+      showError({
+        appUseable = true,
+        error,
+        parsedError = this.parseError(error),
+      }) {
         if (
           !BaseHandler.getMessageModel()
             .getData()
-            .some((msg) => msg.message === oError.message)
+            .some((msg) => msg.message === parsedError.message)
         ) {
-          BaseHandler.getMessageManager().addMessages(oError);
+          BaseHandler.getMessageManager().addMessages(parsedError);
         }
 
-        if (appUseable && this.ErrorIsShown) {
+        if (appUseable && this.messageBoxOpen) {
           return;
         }
 
-        const sText = appUseable
-          ? oError.message
-          : `${oError.message} ${BaseHandler.getResBundle().getText(
+        const text = appUseable
+          ? parsedError.message
+          : `${parsedError.message} ${BaseHandler.getResBundle().getText(
               "navToLaunchpad"
             )}`;
 
-        BaseHandler.ErrorIsShown = true;
-        MessageBox.error(sText, {
+        this.messageBoxOpen = true;
+
+        MessageBox.error(text, {
           actions: [MessageBox.Action.CLOSE],
           onClose: () => {
-            BaseHandler.ErrorIsShown = false;
+            this.messageBoxOpen = false;
+
             if (!appUseable) {
-              const oCrossAppNavigator = sap.ushell.Container.getService(
+              sap.ushell.Container.getService(
                 "CrossApplicationNavigation"
-              );
-              oCrossAppNavigator.toExternal({
+              ).toExternal({
                 target: {
                   semanticObject: "#",
                 },
@@ -46,7 +49,7 @@ sap.ui.define(
         });
       },
 
-      getError(error) {
+      parseError(error) {
         if (typeof error === "object") {
           return error;
         }
