@@ -1,21 +1,16 @@
 sap.ui.define(
-  [
-    "../handling/BaseHandler",
-    "sap/m/Button",
-    "sap/m/MessagePopover",
-    "sap/m/library",
-  ],
-  function (BaseHandler, Button, MessagePopover, SapMLibrary) {
+  ["sap/m/Button", "sap/m/MessagePopover", "sap/m/library"],
+  function (Button, MessagePopover, SAPMLibrary) {
     return {
       getMessagePopover() {
-        if (!this.oMessagePopover) {
-          this.oMessagePopover = this.createMessagePopover();
+        if (!this.messagePopover) {
+          this.messagePopover = this.initMessagePopover();
         }
-        return this.oMessagePopover;
+        return this.messagePopover;
       },
 
-      createMessagePopover() {
-        const oMessagePopover = new MessagePopover({
+      initMessagePopover() {
+        const messagePopover = new MessagePopover({
           headerButton: new Button({
             text: this.getResBundle().getText("sendMail"),
             press: () => {
@@ -30,41 +25,34 @@ sap.ui.define(
             ),
           },
         });
-        oMessagePopover.setModel(this.getMessageModel(), "message");
-        return oMessagePopover;
+        messagePopover.setModel(this.getMessageModel(), "message");
+        return messagePopover;
       },
 
       createEmail() {
-        const oBundle = this.getResBundle();
-        const oAppComponent = sap.ushell.Container.getService(
+        const bundle = this.getResBundle();
+        const appComponent = sap.ushell.Container.getService(
           "AppLifeCycle"
         ).getCurrentApplication().componentInstance;
 
-        const sAddress = oBundle.getText("mailAddress");
-        const sSubject = oBundle.getText(
-          "mailTitle",
-          oAppComponent.getManifest()["sap.app"].title
-        );
-
-        const sBody =
-          this.getUserInfos(oAppComponent.getModel("user")) +
-          this.getMsgInfos();
-
-        SapMLibrary.URLHelper.triggerEmail(sAddress, sSubject, sBody);
+        SAPMLibrary.URLHelper.triggerEmail({
+          address: bundle.getText("mailAddress"),
+          subject: bundle.getText(
+            "mailTitle",
+            appComponent.getManifest()["sap.app"].title
+          ),
+          body:
+            this.getUserInfos(
+              appComponent.getModel("user").getProperty("/user")
+            ) + this.getMsgInfos(),
+        });
       },
 
-      getUserInfos(oUserModel) {
+      getUserInfos(userInfos) {
         // falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
         // ansonsten wird der User der Shell verwendet
-
-        if (oUserModel && oUserModel.getProperty("/user")) {
-          const oUserData = oUserModel.getProperty("/user");
-          return this.getResBundle().getText("userInformationLong", [
-            oUserData.PersonalFullName,
-            oUserData.UserName,
-            oUserData.PlantName,
-            oUserData.Plant,
-          ]);
+        if (userInfos.every(Boolean)) {
+          return this.getResBundle().getText("userInformationLong", userInfos);
         }
 
         return this.getResBundle().getText(
@@ -74,19 +62,15 @@ sap.ui.define(
       },
 
       getMsgInfos() {
-        let sAllMessages = "";
-
-        this.getMessageModel()
+        return this.getMessageModel()
           .getData()
-          .forEach((message) => {
+          .map((message) => {
             // anstatt dem Timestamp soll Datum und Uhrzeit in leslicher Form ausgegeben werden
-            const oTime = new Date(message.date);
-            const sDate = oTime.toLocaleDateString();
-            const sTime = oTime.toLocaleTimeString();
+            const time = new Date(message.date);
 
-            const sMessage = JSON.stringify({
-              date: sDate,
-              time: sTime,
+            return JSON.stringify({
+              date: time.toLocaleDateString(),
+              time: time.toLocaleTimeString(),
               type: message.type,
               code: message.code,
               id: message.id,
@@ -99,11 +83,8 @@ sap.ui.define(
               technical: message.technical,
               validation: message.validation,
             });
-
-            sAllMessages = sAllMessages.concat(" \n ", sMessage);
-          });
-
-        return sAllMessages;
+          })
+          .reduce((arr, curr) => arr + curr, "");
       },
     };
   }
