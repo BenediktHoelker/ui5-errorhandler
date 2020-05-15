@@ -158,7 +158,7 @@ sap.ui.define(
 
         CheckBoxHandling.setShowValueStateForAllCheckBoxes();
         AdditionalTexts.improveAdditionalTexts();
-        MessageToggling.toggleControlMessages();
+        MessageToggling.setShowMessagesOnlyIfControlVsbl();
       },
 
       // ///////////////////////////////////////////////////////////////
