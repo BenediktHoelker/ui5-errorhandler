@@ -24,49 +24,22 @@ sap.ui.define(
         return OPAPlugin.getAllControls();
       },
 
-      checkIfControlIsType(control, sType) {
+      checkIfControlIsType(control, type) {
         return (
           control &&
           typeof control.getMetadata === "function" &&
           typeof control.getMetadata().getName === "function" &&
-          control.getMetadata().getName() === sType
+          control.getMetadata().getName() === type
         );
-      },
-
-      getBindingOfControl(control) {
-        return (
-          control.getBinding("value") ||
-          control.getBinding("selected") ||
-          control.getBinding("selectedKey") ||
-          control.getBinding("dateValue")
-        );
-      },
-
-      getBindingName(control) {
-        if (control.getBinding("value")) {
-          return "value";
-        }
-
-        if (control.getBinding("selected")) {
-          return "selected";
-        }
-
-        if (control.getBinding("selectedKey")) {
-          return "selectedKey";
-        }
-
-        if (control.getBinding("dateValue")) {
-          return "dateValue";
-        }
-
-        return "";
       },
 
       getMessagesOfControl(control) {
         const binding = this.getBindingOfControl(control);
+
         if (!binding) {
           return this.getMessagesOfSmartField(control);
         }
+
         return binding
           .getDataState()
           .getMessages()
@@ -78,6 +51,7 @@ sap.ui.define(
           control,
           "sap.ui.comp.smartfield.SmartField"
         );
+
         if (
           isSmartField &&
           typeof control.getInnerControls === "function" &&
@@ -85,11 +59,12 @@ sap.ui.define(
         ) {
           const innerControl = control.getInnerControls()[0];
           const binding = this.getBindingOfControl(innerControl);
+
           if (binding) {
             return binding.getDataState().getMessages();
           }
 
-          // falls das SmartField als nicht editabled oder nicht enabled ist, ist das innerControl ein sap.m.Text Control
+          // falls das SmartField nicht editable oder nicht enabled ist, ist das innerControl ein sap.m.Text Control
           // die Messages dieses Controls können nicht über den DataState ausgelesen werden
           if (!control.getEnabled() || !control.getEditable()) {
             return this.getMessageModel()
@@ -101,6 +76,18 @@ sap.ui.define(
           }
         }
         return [];
+      },
+
+      getBindingOfControl(control) {
+        return ["value", "selected", "selectedKey", "dateValue"]
+          .map((name) => control.getBinding(name))
+          .find(Boolean);
+      },
+
+      getBindingName(control) {
+        return ["value", "selected", "selectedKey", "dateValue"].find((name) =>
+          control.getBinding(name)
+        );
       },
     };
   }
