@@ -1,6 +1,6 @@
 sap.ui.define(
   [
-    "./handling/BaseHandler",
+    "./handling/Base",
     "./handling/CheckBox",
     "./handling/AdditionalTexts",
     "./handling/MessagePopover",
@@ -8,7 +8,7 @@ sap.ui.define(
     "./handling/ServiceError",
   ],
   function (
-    BaseHandler,
+    Base,
     CheckBoxHandling,
     AdditionalTexts,
     MessagePopoverHandling,
@@ -38,7 +38,7 @@ sap.ui.define(
           this.removeAllMessages();
         }
 
-        BaseHandler.getAllControls()
+        Base.getAllControls()
           .filter(
             (control) =>
               control.getMetadata().getElementName() ===
@@ -59,9 +59,7 @@ sap.ui.define(
 
             ServiceErrHandling.showError({
               appUseable: false,
-              error: BaseHandler.getResBundle().getText(
-                "metadataLoadingFailed"
-              ),
+              error: Base.getResBundle().getText("metadataLoadingFailed"),
             });
           });
 
@@ -120,7 +118,7 @@ sap.ui.define(
           (msg) => !uniqueMessages.includes(msg)
         );
 
-        BaseHandler.getMessageManager().removeMessages(duplicates);
+        Base.getMessageManager().removeMessages(duplicates);
 
         return uniqueMessages;
       },
@@ -137,7 +135,7 @@ sap.ui.define(
 
         if (responseText.includes("Timed Out") || response.statusCode === 504) {
           return ServiceErrHandling.showError({
-            error: BaseHandler.getResBundle().getText("timedOut"),
+            error: Base.getResBundle().getText("timedOut"),
           });
         }
 
@@ -169,15 +167,15 @@ sap.ui.define(
       // ///////////////////////////////////////////////////////////////
 
       setMessageManager(view) {
-        BaseHandler.getMessageManager().registerObject(view, true);
+        Base.getMessageManager().registerObject(view, true);
       },
 
       getMessageModel() {
-        return BaseHandler.getMessageModel();
+        return Base.getMessageModel();
       },
 
       removeAllMessages() {
-        BaseHandler.getMessageManager().removeAllMessages();
+        Base.getMessageManager().removeAllMessages();
       },
 
       // ///////////////////////////////////////////////////////////////
@@ -193,7 +191,7 @@ sap.ui.define(
       }) {
         if (input && text) {
           // Messages beziehen sich direkt auf das Control => Messages werden bei Änderungen automatisch entfernt
-          BaseHandler.addValidationMsg({
+          Base.addValidationMsg({
             input,
             text,
             type,
@@ -202,7 +200,7 @@ sap.ui.define(
         }
 
         if (target) {
-          BaseHandler.addManualMessage({
+          Base.addManualMessage({
             target,
             text,
             additionalText,
@@ -212,15 +210,15 @@ sap.ui.define(
       },
 
       removeMessage(options) {
-        BaseHandler.removeValidationMsg(options);
+        Base.removeValidationMsg(options);
       },
 
       removeBckndMsgForControl(control) {
-        BaseHandler.removeBckndMsgForControl(control);
+        Base.removeBckndMsgForControl(control);
       },
 
       hasMessageWithTarget(sTarget) {
-        return BaseHandler.hasMsgWithTarget(sTarget);
+        return Base.hasMsgWithTarget(sTarget);
       },
     };
   }

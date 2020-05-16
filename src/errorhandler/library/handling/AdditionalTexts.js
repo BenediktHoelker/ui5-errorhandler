@@ -1,4 +1,4 @@
-sap.ui.define(["../handling/BaseHandler"], (BaseHandler) => {
+sap.ui.define(["../handling/Base"], (Base) => {
   return {
     // das MessageHandling liest immer automatisch sap.ui.core.LabelEnablement.getReferencingLabels aus
     // und benutzt den Text des Labels als AdditionalText im ErrorHandling
@@ -6,17 +6,17 @@ sap.ui.define(["../handling/BaseHandler"], (BaseHandler) => {
     // => mit dieser Methode werden die AdditionalTexts trotzdem gefüllt
 
     improveAdditionalTexts() {
-      const allControls = BaseHandler.getAllControls();
+      const allControls = Base.getAllControls();
 
       const controlsWithoutValueState = allControls.filter(
         (control) =>
-          BaseHandler.checkIfControlIsType(control, "sap.m.RatingIndicator") ||
-          BaseHandler.checkIfControlIsType(control, "sap.m.CheckBox")
+          Base.checkIfControlIsType(control, "sap.m.RatingIndicator") ||
+          Base.checkIfControlIsType(control, "sap.m.CheckBox")
       );
 
       const controlsWithoutDirectLabel = allControls.filter(
         (control) =>
-          BaseHandler.checkIfControlIsType(control, "sap.m.Input") &&
+          Base.checkIfControlIsType(control, "sap.m.Input") &&
           sap.ui.core.LabelEnablement.getReferencingLabels(control).length === 0
       );
 
@@ -30,7 +30,7 @@ sap.ui.define(["../handling/BaseHandler"], (BaseHandler) => {
 
       allControls
         .filter((control) =>
-          BaseHandler.checkIfControlIsType(
+          Base.checkIfControlIsType(
             control,
             "sap.ui.comp.smartfield.SmartField"
           )
@@ -45,7 +45,7 @@ sap.ui.define(["../handling/BaseHandler"], (BaseHandler) => {
     },
 
     improveAdditionalText(control) {
-      const binding = BaseHandler.getBindingOfControl(control);
+      const binding = Base.getBindingOfControl(control);
 
       if (!binding) {
         return;
@@ -59,10 +59,10 @@ sap.ui.define(["../handling/BaseHandler"], (BaseHandler) => {
     },
 
     addAdditionalText(control) {
-      const messageManager = BaseHandler.getMessageManager();
+      const messageManager = Base.getMessageManager();
       const additionalText = this.getAdditionalTextForControl(control);
 
-      const messagesWithoutAdditionalText = BaseHandler.getMessagesOfControl(
+      const messagesWithoutAdditionalText = Base.getMessagesOfControl(
         control
       ).filter((message) => !message.getAdditionalText());
 
@@ -101,12 +101,12 @@ sap.ui.define(["../handling/BaseHandler"], (BaseHandler) => {
 
       if (
         typeof control.getParent === "function" &&
-        BaseHandler.checkIfControlIsType(
+        Base.checkIfControlIsType(
           control.getParent(),
           "sap.ui.comp.smartfield.SmartField"
         )
       ) {
-        return BaseHandler.getLabelIdsForControl(control.getParent());
+        return Base.getLabelIdsForControl(control.getParent());
       }
 
       return [];

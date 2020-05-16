@@ -1,10 +1,6 @@
 sap.ui.define(
-  [
-    "../handling/BaseHandler",
-    "sap/ui/core/message/Message",
-    "sap/m/MessageBox",
-  ],
-  function (BaseHandler, Message, MessageBox) {
+  ["../handling/Base", "sap/ui/core/message/Message", "sap/m/MessageBox"],
+  function (Base, Message, MessageBox) {
     return {
       showError({
         appUseable = true,
@@ -12,11 +8,11 @@ sap.ui.define(
         parsedError = this.parseError(error),
       }) {
         if (
-          !BaseHandler.getMessageModel()
+          !Base.getMessageModel()
             .getData()
             .some((msg) => msg.message === parsedError.message)
         ) {
-          BaseHandler.getMessageManager().addMessages(parsedError);
+          Base.getMessageManager().addMessages(parsedError);
         }
 
         if (appUseable && this.messageBoxOpen) {
@@ -25,7 +21,7 @@ sap.ui.define(
 
         const text = appUseable
           ? parsedError.message
-          : `${parsedError.message} ${BaseHandler.getResBundle().getText(
+          : `${parsedError.message} ${Base.getResBundle().getText(
               "navToLaunchpad"
             )}`;
 

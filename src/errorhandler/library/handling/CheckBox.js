@@ -1,11 +1,11 @@
-sap.ui.define(["../handling/BaseHandler"], function (BaseHandler) {
+sap.ui.define(["../handling/Base"], function (Base) {
   return {
     // der ValueState einer Checkbox wird, im Gegensatz zu den anderen Controls dem Benutzer ohne besondere Behandlung nicht dargestellt
 
     setShowValueStateForAllCheckBoxes() {
-      BaseHandler.getAllControls()
+      Base.getAllControls()
         .filter((control) =>
-          BaseHandler.checkIfControlIsType(control, "sap.m.CheckBox")
+          Base.checkIfControlIsType(control, "sap.m.CheckBox")
         )
         .forEach((checkbox) =>
           checkbox.attachSelect((event) => {
