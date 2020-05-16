@@ -4,18 +4,16 @@ sap.ui.define(
     "./handling/CheckBox",
     "./handling/AdditionalTexts",
     "./handling/MessagePopover",
-    "./handling/MessageToggling",
+    "./handling/ShowMessagesOnlyIfControlVisible",
     "./handling/ServiceError",
-    "./handling/SpecialMessages",
   ],
   function (
     BaseHandler,
     CheckBoxHandling,
     AdditionalTexts,
     MessagePopoverHandling,
-    MessageToggling,
-    ServiceErrHandling,
-    SpecialMsgHandling
+    ShowMessagesOnlyIfControlVisible,
+    ServiceErrHandling
   ) {
     sap.ui.getCore().initLibrary({
       name: "errorhandler.library",
@@ -31,6 +29,7 @@ sap.ui.define(
     return {
       init({
         appViewModel,
+        viewModel = appViewModel,
         oDataModels,
         ODataModels = oDataModels,
         removeAllMessages = true,
@@ -39,10 +38,18 @@ sap.ui.define(
           this.removeAllMessages();
         }
 
-        this.initErrorHandling(ODataModels, appViewModel);
-      },
+        BaseHandler.getAllControls()
+          .filter(
+            (control) =>
+              control.getMetadata().getElementName() ===
+              "sap.ui.core.ComponentContainer"
+          )
+          .forEach((component) =>
+            component.attachComponentCreated(() =>
+              this.initMessageEnhancements()
+            )
+          );
 
-      initErrorHandling(ODataModels, viewModel) {
         ODataModels.forEach((model) => {
           Promise.all([
             this.waitForAppToBeRendered(viewModel, "/isRendered"),
@@ -143,22 +150,10 @@ sap.ui.define(
       // Message Improvment
       // ///////////////////////////////////////////////////////////////
 
-      initMessageImprovments() {
-        BaseHandler.getAllControls()
-          .filter(
-            (control) =>
-              control.getMetadata().getElementName() ===
-              "sap.ui.core.ComponentContainer"
-          )
-          .forEach((component) =>
-            component.attachComponentCreated(() =>
-              this.initMessageImprovments()
-            )
-          );
-
+      initMessageEnhancements() {
         CheckBoxHandling.setShowValueStateForAllCheckBoxes();
         AdditionalTexts.improveAdditionalTexts();
-        MessageToggling.setShowMessagesOnlyIfControlVsbl();
+        ShowMessagesOnlyIfControlVisible.init();
       },
 
       // ///////////////////////////////////////////////////////////////
@@ -198,7 +193,7 @@ sap.ui.define(
       }) {
         if (input && text) {
           // Messages beziehen sich direkt auf das Control => Messages werden bei Änderungen automatisch entfernt
-          SpecialMsgHandling.addValidationMsg({
+          BaseHandler.addValidationMsg({
             input,
             text,
             type,
@@ -207,7 +202,7 @@ sap.ui.define(
         }
 
         if (target) {
-          SpecialMsgHandling.addManualMessage({
+          BaseHandler.addManualMessage({
             target,
             text,
             additionalText,
@@ -217,15 +212,15 @@ sap.ui.define(
       },
 
       removeMessage(options) {
-        SpecialMsgHandling.removeValidationMsg(options);
+        BaseHandler.removeValidationMsg(options);
       },
 
       removeBckndMsgForControl(control) {
-        SpecialMsgHandling.removeBckndMsgForControl(control);
+        BaseHandler.removeBckndMsgForControl(control);
       },
 
       hasMessageWithTarget(sTarget) {
-        return SpecialMsgHandling.hasMsgWithTarget(sTarget);
+        return BaseHandler.hasMsgWithTarget(sTarget);
       },
     };
   }
