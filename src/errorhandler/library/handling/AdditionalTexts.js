@@ -20,13 +20,9 @@ sap.ui.define(["../handling/Base"], (Base) => {
           sap.ui.core.LabelEnablement.getReferencingLabels(control).length === 0
       );
 
-      const controlsWithoutLabel = controlsWithoutValueState.concat(
-        controlsWithoutDirectLabel
-      );
-
-      controlsWithoutLabel.forEach((control) =>
-        this.improveAdditionalText(control)
-      );
+      controlsWithoutValueState
+        .concat(controlsWithoutDirectLabel)
+        .forEach((control) => this.improveAdditionalText(control));
 
       allControls
         .filter((control) =>
@@ -52,25 +48,18 @@ sap.ui.define(["../handling/Base"], (Base) => {
       }
 
       binding.attachAggregatedDataStateChange(() =>
-        this.addAdditionalText(control, binding)
+        this.setAdditionalText(control, binding)
       );
 
-      binding.attachChange(() => this.addAdditionalText(control, binding));
+      binding.attachChange(() => this.setAdditionalText(control, binding));
     },
 
-    addAdditionalText(control) {
-      const messageManager = Base.getMessageManager();
+    setAdditionalText(control) {
       const additionalText = this.getAdditionalTextForControl(control);
 
-      const messagesWithoutAdditionalText = Base.getMessagesOfControl(
-        control
-      ).filter((message) => !message.getAdditionalText());
-
-      messageManager.removeMessages(messagesWithoutAdditionalText);
-      messagesWithoutAdditionalText.forEach((message) =>
-        message.setAdditionalText(additionalText)
-      );
-      messageManager.addMessages(messagesWithoutAdditionalText);
+      Base.getMessagesOfControl(control)
+        .filter((message) => !message.getAdditionalText())
+        .forEach((message) => message.setAdditionalText(additionalText));
     },
 
     getAdditionalTextForControl(control) {
