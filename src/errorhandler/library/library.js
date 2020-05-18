@@ -6,6 +6,7 @@ sap.ui.define(
     "./handling/MessagePopover",
     "./handling/ShowMessagesOnlyIfControlVisible",
     "./handling/ServiceError",
+    "./validation/Validator",
   ],
   function (
     Base,
@@ -13,7 +14,8 @@ sap.ui.define(
     AdditionalTexts,
     MessagePopoverHandling,
     ShowMessagesOnlyIfControlVisible,
-    ServiceErrHandling
+    ServiceErrHandling,
+    Validator
   ) {
     sap.ui.getCore().initLibrary({
       name: "errorhandler.library",
@@ -37,6 +39,8 @@ sap.ui.define(
         if (removeAllMessages) {
           this.removeAllMessages();
         }
+
+        this.validator = new Validator();
 
         Base.getAllControls()
           .filter(
@@ -84,6 +88,10 @@ sap.ui.define(
             }
           });
         });
+      },
+
+      validate(control) {
+        return this.validator.validate(control);
       },
 
       waitForAppToBeRendered(viewModel, property) {
