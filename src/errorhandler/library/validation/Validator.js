@@ -161,8 +161,6 @@ sap.ui.define(
 
     class Validator {
       constructor() {
-        this.isValid = true;
-        this.isValidationPerformed = false;
         this.possibleAggregations = [
           "items",
           "content",
@@ -180,21 +178,21 @@ sap.ui.define(
       }
 
       /**
-       * Returns true only when the form validation has been performed, and no validation errors were found
-       */
-      isValid() {
-        return this.isValidationPerformed && this.isValid;
-      }
-
-      /**
        * Recursively validates the given control and any aggregations (i.e. child controls) it may have
        */
-      validate(control) {
-        this.isValid = true;
+      validate(parent) {
         sap.ui.getCore().getMessageManager().removeAllMessages();
-        this._validate(control);
 
-        return this.isValid();
+        const isValid = this.getValidations(parent)
+          .map(({ control, valid, valueState, message }) => {
+            control.setValueState(valueState);
+            control.setValueStateText(message);
+
+            return valid;
+          })
+          .every(Boolean);
+
+        return isValid;
       }
 
       clearValueState(control) {
@@ -211,10 +209,7 @@ sap.ui.define(
       /**
        * Recursively validates the given control and any aggregations (i.e. child controls) it may have
        */
-      _validate(control) {
-        const isValidatedControl = true;
-        const isValid = true;
-
+      getValidations(control) {
         // only validate controls and elements which have a 'visible' property
         // and are visible controls (invisible controls make no sense checking)
         if (
@@ -226,10 +221,16 @@ sap.ui.define(
             control.getVisible()
           )
         ) {
-          return;
+          return [];
         }
 
-        const validatons = [
+        if (!(typeof control.getValueState === "function")) {
+          // no validation possible => yet check for aggregations
+
+          return this.recursiveCall(control, this.validate);
+        }
+
+        return [
           validateRequired({
             control,
             propsToValidate: this.validateProperties,
@@ -243,18 +244,6 @@ sap.ui.define(
             propsToValidate: this.validateProperties,
           }),
         ];
-
-        if (!isValid) {
-          this.isValid = false;
-          addMessage(control);
-        }
-
-        // if the control could not be validated, it may have aggregations
-        if (!isValidatedControl) {
-          this.recursiveCall(control, this.validate);
-        }
-
-        this.isValidationPerformed = true;
       }
     }
 
