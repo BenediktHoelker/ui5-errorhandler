@@ -1,4 +1,4 @@
-sap.ui.define(["../handling/Base"], (Base) => {
+sap.ui.define(["../Base"], (Base) => {
   return {
     // das MessageHandling liest immer automatisch sap.ui.core.LabelEnablement.getReferencingLabels aus
     // und benutzt den Text des Labels als AdditionalText im ErrorHandling
@@ -10,13 +10,13 @@ sap.ui.define(["../handling/Base"], (Base) => {
 
       const controlsWithoutValueState = allControls.filter(
         (control) =>
-          Base.checkIfControlIsType(control, "sap.m.RatingIndicator") ||
-          Base.checkIfControlIsType(control, "sap.m.CheckBox")
+          Base.checkControlIsType(control, "sap.m.RatingIndicator") ||
+          Base.checkControlIsType(control, "sap.m.CheckBox")
       );
 
       const controlsWithoutDirectLabel = allControls.filter(
         (control) =>
-          Base.checkIfControlIsType(control, "sap.m.Input") &&
+          Base.checkControlIsType(control, "sap.m.Input") &&
           sap.ui.core.LabelEnablement.getReferencingLabels(control).length === 0
       );
 
@@ -26,10 +26,7 @@ sap.ui.define(["../handling/Base"], (Base) => {
 
       allControls
         .filter((control) =>
-          Base.checkIfControlIsType(
-            control,
-            "sap.ui.comp.smartfield.SmartField"
-          )
+          Base.checkControlIsType(control, "sap.ui.comp.smartfield.SmartField")
         )
         .forEach((smartField) =>
           smartField.attachInnerControlsCreated(() => {
@@ -90,7 +87,7 @@ sap.ui.define(["../handling/Base"], (Base) => {
 
       if (
         typeof control.getParent === "function" &&
-        Base.checkIfControlIsType(
+        Base.checkControlIsType(
           control.getParent(),
           "sap.ui.comp.smartfield.SmartField"
         )

@@ -1,5 +1,5 @@
 sap.ui.define(
-  ["../handling/Base", "sap/ui/core/message/Message", "sap/m/MessageBox"],
+  ["../Base", "sap/ui/core/message/Message", "sap/m/MessageBox"],
   function (Base, Message, MessageBox) {
     return {
       showError({

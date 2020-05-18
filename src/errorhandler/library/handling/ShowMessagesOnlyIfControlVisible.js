@@ -1,4 +1,4 @@
-sap.ui.define(["../handling/Base"], function (Base) {
+sap.ui.define(["../Base"], function (Base) {
   return {
     // die Messages aller Controls sollen nur angezeigt werden wenn das Control visible ist
     // falls sich das visible-Binding ändert sollen die Messages nicht mehr / wieder angezeigt werden
