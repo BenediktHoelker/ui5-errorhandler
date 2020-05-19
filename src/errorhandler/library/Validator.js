@@ -122,68 +122,6 @@ sap.ui.define(
         });
     }
 
-    function convertValueStateToMessageType(valueState = ValueState.Error) {
-      Object.entries(ValueState)
-        .filter(([...value]) => value === valueState)
-        .map(([key]) => MessageType[key]);
-    }
-
-    function getLabel(control) {
-      switch (control.getMetadata().getName()) {
-        case "sap.m.CheckBox":
-        case "sap.m.Input":
-        case "sap.m.Select": {
-          const parent = control.getParent();
-          return parent.getLabel
-            ? parent.getLabel().getText()
-            : parent.getParent().getLabel().getText();
-        }
-        default:
-          return "";
-      }
-    }
-
-    function createMessage({
-      control,
-      valueState,
-      valueStateText,
-      type = convertValueStateToMessageType(valueState),
-      message = valueStateText,
-      additionalText = getLabel(control),
-    }) {
-      return new Message({
-        message,
-        type,
-        additionalText,
-      });
-    }
-
-    function updateUI(validations) {
-      const messageManager = sap.ui.getCore().getMessageManager();
-      const validationsByControl = new Map(
-        // Reduce all validations into one per control
-        validations
-          .sort((a, b) => a.valueState.localeCompare(b.valueState))
-          // Sort descending by valueState in order to overwrite "None" with "Error", in case both are present for one control
-          .reverse()
-          .map((validation) => [validation.control.getId(), validation])
-      );
-
-      // messageManager.removeAllMessages();
-
-      validationsByControl.forEach(
-        ({ control, valueState, valueStateText }) => {
-          control.setValueState(valueState);
-          control.setValueStateText(valueStateText);
-        }
-      );
-
-      Array.from(validationsByControl.values())
-        .filter(({ valueState }) => valueState === ValueState.Error)
-        .map((validation) => createMessage(validation))
-        .forEach((message) => messageManager.addMessages(message));
-    }
-
     class Validator {
       constructor() {
         this.possibleAggregations = [
