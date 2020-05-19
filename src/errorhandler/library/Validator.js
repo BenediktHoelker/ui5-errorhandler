@@ -190,7 +190,7 @@ sap.ui.define(
       validate(parent) {
         const validations = this.getValidations([], parent);
 
-        updateUI(validations);
+        // updateUI(validations);
 
         return validations.some(
           ({ valueState }) => valueState === ValueState.Error
