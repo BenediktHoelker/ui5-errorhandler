@@ -4,6 +4,7 @@ sap.ui.define(
     "./handling/CheckBox",
     "./handling/AdditionalTexts",
     "./handling/MessagePopover",
+    "sap/ui/model/resource/ResourceModel",
     "./handling/ShowMessagesOnlyIfControlVisible",
     "./handling/ServiceError",
     "./validation/Validator",
@@ -13,6 +14,7 @@ sap.ui.define(
     CheckBoxHandling,
     AdditionalTexts,
     MessagePopoverHandling,
+    ResourceModel,
     ShowMessagesOnlyIfControlVisible,
     ServiceErrHandling,
     Validator
@@ -41,6 +43,13 @@ sap.ui.define(
         }
 
         this.validator = new Validator();
+        this.resBundle = new ResourceModel({
+          bundleName: "errorhandler.library.i18n.i18n",
+        }).getResourceBundle();
+        this.messagePopover = new MessagePopoverHandling({
+          resBundle: this.resBundle,
+          messageModel: this.getMessageModel(),
+        });
 
         Base.getAllControls()
           .filter(
@@ -88,6 +97,14 @@ sap.ui.define(
             }
           });
         });
+      },
+
+      getMessageModel() {
+        return this.getMessageManager().getMessageModel();
+      },
+
+      getMessageManager() {
+        return sap.ui.getCore().getMessageManager();
       },
 
       validate(control) {
@@ -167,7 +184,7 @@ sap.ui.define(
       // ///////////////////////////////////////////////////////////////
 
       getMessagePopover() {
-        return MessagePopoverHandling.getMessagePopover();
+        return this.messagePopover.getMessagePopover();
       },
 
       // ///////////////////////////////////////////////////////////////
@@ -176,10 +193,6 @@ sap.ui.define(
 
       setMessageManager(view) {
         Base.getMessageManager().registerObject(view, true);
-      },
-
-      getMessageModel() {
-        return Base.getMessageModel();
       },
 
       removeAllMessages() {

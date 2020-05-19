@@ -1,7 +1,20 @@
 sap.ui.define(
-  ["sap/m/Button", "sap/m/MessagePopover", "sap/m/library"],
-  function (Button, MessagePopover, SAPMLibrary) {
-    return {
+  [
+    "sap/ui/base/Object",
+    "sap/m/Button",
+    "sap/m/MessagePopover",
+    "sap/m/library",
+  ],
+  function (UI5Object, Button, MessagePopover, SAPMLibrary) {
+    return UI5Object.extend("errorhandler.library.validation.MessagePopover", {
+      // eslint-disable-next-line object-shorthand
+      constructor: function ({ resBundle, messageModel } = {}, ...args) {
+        UI5Object.apply(this, args);
+
+        this.resBundle = resBundle;
+        this.messageModel = messageModel;
+      },
+
       getMessagePopover() {
         if (!this.messagePopover) {
           this.messagePopover = this.initMessagePopover();
@@ -12,10 +25,8 @@ sap.ui.define(
       initMessagePopover() {
         const messagePopover = new MessagePopover({
           headerButton: new Button({
-            text: this.getResBundle().getText("sendMail"),
-            press: () => {
-              this.triggerEmail(this);
-            },
+            text: this.resBundle.getText("sendMail"),
+            press: () => this.triggerEmail(),
           }),
           items: {
             path: "message>/",
@@ -25,12 +36,12 @@ sap.ui.define(
             ),
           },
         });
-        messagePopover.setModel(this.getMessageModel(), "message");
+        messagePopover.setModel(this.messageModel, "message");
         return messagePopover;
       },
 
       triggerEmail() {
-        const bundle = this.getResBundle();
+        const bundle = this.resBundle;
         const appComponent = sap.ushell.Container.getService(
           "AppLifeCycle"
         ).getCurrentApplication().componentInstance;
@@ -52,17 +63,17 @@ sap.ui.define(
         // falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
         // ansonsten wird der User der Shell verwendet
         if (userInfos.every(Boolean)) {
-          return this.getResBundle().getText("userInformationLong", userInfos);
+          return this.resBundle.getText("userInformationLong", userInfos);
         }
 
-        return this.getResBundle().getText(
+        return this.resBundle.getText(
           "userInformationShort",
           sap.ushell.Container.getService("UserInfo").getId()
         );
       },
 
       getMsgInfos() {
-        return this.getMessageModel()
+        return this.messageModel
           .getData()
           .map((message) => {
             // anstatt dem Timestamp soll Datum und Uhrzeit in leslicher Form ausgegeben werden
@@ -86,6 +97,6 @@ sap.ui.define(
           })
           .reduce((arr, curr) => arr + curr, "");
       },
-    };
+    });
   }
 );
