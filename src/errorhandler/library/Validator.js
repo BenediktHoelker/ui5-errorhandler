@@ -21,6 +21,14 @@ sap.ui.define(
       return control.getVisible && control.getVisible();
     }
 
+    function getValueState(control) {
+      return control.getValueState ? control.getValueState() : "None";
+    }
+
+    function getValueStateText(control) {
+      return control.getValueStateText ? control.getValueStateText() : "None";
+    }
+
     function getHasInnerControls(control) {
       return control.getInnerControls && control.getInnerControls().length > 0;
     }
@@ -31,8 +39,8 @@ sap.ui.define(
         binding: control.getBinding(prop),
         externalValue: control.getProperty(prop),
         prop,
-        valueState: control.getValueState(),
-        valueStateText: control.getValueStateText(),
+        valueState: getValueState(control),
+        valueStateText: getValueStateText(control),
       };
     }
 
@@ -84,11 +92,21 @@ sap.ui.define(
         .map((vldContext) => {
           try {
             const { binding, externalValue } = vldContext;
-            const internalValue = binding
-              .getType()
-              .parseValue(externalValue, binding.sInternalType);
+            const type = binding.getType();
 
-            binding.getType().validateValue(internalValue);
+            if (!type) {
+              return {
+                ...vldContext,
+                message: "No field constraints set => good",
+              };
+            }
+
+            const internalValue = type.parseValue(
+              externalValue,
+              binding.sInternalType
+            );
+
+            type.validateValue(internalValue);
 
             return {
               ...vldContext,
@@ -170,6 +188,7 @@ sap.ui.define(
       constructor() {
         this.possibleAggregations = [
           "items",
+          "steps",
           "content",
           "form",
           "formContainers",
@@ -181,19 +200,23 @@ sap.ui.define(
           "cells",
           "page",
         ];
-        this.propsToValidate = ["value", "selectedKey", "text"]; // yes, I want to validate Select and Text controls too
+        this.propsToValidate = ["value", "selectedKey", "selected", "text"]; // yes, I want to validate Select and Text controls too
       }
 
       /**
        * Recursively validates the given control and any aggregations (i.e. child controls) it may have
+       * Input 1..n controls (e.g. the n active Wizard-Steps)
        */
-      validate(parent) {
-        const validations = this.getValidations([], parent);
+      validate(parents) {
+        const validations = [parents]
+          // parents can be an array or a single control
+          .flat()
+          .reduce((acc, curr) => acc.concat(this.getValidations([], curr)), []);
 
         // updateUI(validations);
 
-        return validations.some(
-          ({ valueState }) => valueState === ValueState.Error
+        return validations.every(
+          ({ valueState }) => valueState !== ValueState.Error
         );
       }
 
