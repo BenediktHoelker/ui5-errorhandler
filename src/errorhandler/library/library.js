@@ -2,20 +2,18 @@ sap.ui.define(
   [
     "./handling/Base",
     "./handling/CheckBox",
-    "./handling/AdditionalTexts",
+    "sap/ui/core/message/Message",
     "./handling/MessagePopover",
     "sap/ui/model/resource/ResourceModel",
-    "./handling/ShowMessagesOnlyIfControlVisible",
     "./handling/ServiceError",
-    "./validation/Validator",
+    "./Validator",
   ],
   function (
     Base,
     CheckBoxHandling,
-    AdditionalTexts,
-    MessagePopoverHandling,
+    Message,
+    MessagePopover,
     ResourceModel,
-    ShowMessagesOnlyIfControlVisible,
     ServiceErrHandling,
     Validator
   ) {
@@ -46,22 +44,10 @@ sap.ui.define(
         this.resBundle = new ResourceModel({
           bundleName: "errorhandler.library.i18n.i18n",
         }).getResourceBundle();
-        this.messagePopover = new MessagePopoverHandling({
+        this.messagePopover = new MessagePopover({
           resBundle: this.resBundle,
           messageModel: this.getMessageModel(),
         });
-
-        Base.getAllControls()
-          .filter(
-            (control) =>
-              control.getMetadata().getElementName() ===
-              "sap.ui.core.ComponentContainer"
-          )
-          .forEach((component) =>
-            component.attachComponentCreated(() =>
-              this.initMessageEnhancements()
-            )
-          );
 
         ODataModels.forEach((model) => {
           Promise.all([
@@ -143,7 +129,7 @@ sap.ui.define(
           (msg) => !uniqueMessages.includes(msg)
         );
 
-        Base.getMessageManager().removeMessages(duplicates);
+        this.getMessageManager().removeMessages(duplicates);
 
         return uniqueMessages;
       },
@@ -160,7 +146,7 @@ sap.ui.define(
 
         if (responseText.includes("Timed Out") || response.statusCode === 504) {
           return ServiceErrHandling.showError({
-            error: Base.getResBundle().getText("timedOut"),
+            error: this.resBundle.getText("timedOut"),
           });
         }
 
@@ -169,78 +155,44 @@ sap.ui.define(
         });
       },
 
-      // ///////////////////////////////////////////////////////////////
-      // Message Improvment
-      // ///////////////////////////////////////////////////////////////
-
       initMessageEnhancements() {
         CheckBoxHandling.setShowValueStateForAllCheckBoxes();
-        AdditionalTexts.improveAdditionalTexts();
-        ShowMessagesOnlyIfControlVisible.init();
       },
-
-      // ///////////////////////////////////////////////////////////////
-      // Message Popover
-      // ///////////////////////////////////////////////////////////////
 
       getMessagePopover() {
         return this.messagePopover.getMessagePopover();
       },
 
-      // ///////////////////////////////////////////////////////////////
-      // Basics
-      // ///////////////////////////////////////////////////////////////
-
       setMessageManager(view) {
-        Base.getMessageManager().registerObject(view, true);
+        this.getMessageManager().registerObject(view, true);
       },
 
       removeAllMessages() {
-        Base.getMessageManager().removeAllMessages();
+        this.getMessageManager().removeAllMessages();
       },
 
-      // ///////////////////////////////////////////////////////////////
-      // Special-Messages => manuelles Hinzufügen und Löschen
-      // ///////////////////////////////////////////////////////////////
-
       addMessage({
-        input,
         text,
+        message = text,
         target,
         additionalText,
         type = sap.ui.core.MessageType.Error,
       }) {
-        if (input && text) {
-          // Messages beziehen sich direkt auf das Control => Messages werden bei Änderungen automatisch entfernt
-          Base.addValidationMsg({
-            input,
-            text,
-            type,
-          });
-          return;
-        }
-
-        if (target) {
-          Base.addManualMessage({
-            target,
-            text,
+        this.getMessageManager().addMessages(
+          new Message({
             additionalText,
+            target,
+            processor: this.getMsgProcessor(),
+            message,
             type,
-          });
-        }
+            validation: true,
+          })
+        );
       },
 
-      removeMessage(options) {
-        Base.removeValidationMsg(options);
-      },
+      removeMessage() {},
 
-      removeBckndMsgForControl(control) {
-        Base.removeBckndMsgForControl(control);
-      },
-
-      hasMessageWithTarget(sTarget) {
-        return Base.hasMsgWithTarget(sTarget);
-      },
+      removeBckndMsgForControl() {},
     };
   }
 );
