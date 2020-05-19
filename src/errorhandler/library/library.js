@@ -1,6 +1,5 @@
 sap.ui.define(
   [
-    "./handling/Base",
     "./handling/CheckBox",
     "sap/ui/core/message/Message",
     "./handling/MessagePopover",
@@ -9,12 +8,11 @@ sap.ui.define(
     "./Validator",
   ],
   function (
-    Base,
     CheckBoxHandling,
     Message,
     MessagePopover,
     ResourceModel,
-    ServiceErrHandling,
+    ServiceError,
     Validator
   ) {
     sap.ui.getCore().initLibrary({
@@ -37,13 +35,22 @@ sap.ui.define(
         removeAllMessages = true,
       }) {
         if (removeAllMessages) {
-          this.removeAllMessages();
+          this.getMessageManager().removeAllMessages();
         }
 
+        this.customValidations = [];
+        this.backendMessages = [];
         this.validator = new Validator();
+
         this.resBundle = new ResourceModel({
           bundleName: "errorhandler.library.i18n.i18n",
         }).getResourceBundle();
+
+        this.errorHandler = new ServiceError({
+          resBundle: this.resBundle,
+          messageModel: this.getMessageModel(),
+        });
+
         this.messagePopover = new MessagePopover({
           resBundle: this.resBundle,
           messageModel: this.getMessageModel(),
@@ -56,9 +63,9 @@ sap.ui.define(
           ]).then(() => {
             viewModel.setProperty("/busy", false);
 
-            ServiceErrHandling.showError({
+            this.errorHandler.showError({
               appUseable: false,
-              error: Base.getResBundle().getText("metadataLoadingFailed"),
+              error: this.resBundle.getText("metadataLoadingFailed"),
             });
           });
 
@@ -70,7 +77,7 @@ sap.ui.define(
             );
 
             if (error) {
-              ServiceErrHandling.showError({
+              this.errorHandler.showError({
                 error,
               });
             }
@@ -93,8 +100,8 @@ sap.ui.define(
         return sap.ui.getCore().getMessageManager();
       },
 
-      validate(control) {
-        return this.validator.validate(control);
+      validate(root) {
+        return this.validator.validate(root);
       },
 
       waitForAppToBeRendered(viewModel, property) {
@@ -145,12 +152,12 @@ sap.ui.define(
         const { responseText } = response;
 
         if (responseText.includes("Timed Out") || response.statusCode === 504) {
-          return ServiceErrHandling.showError({
+          return this.errorHandler.showError({
             error: this.resBundle.getText("timedOut"),
           });
         }
 
-        return ServiceErrHandling.showError({
+        return this.errorHandler.showError({
           error: responseText,
         });
       },
@@ -165,10 +172,6 @@ sap.ui.define(
 
       setMessageManager(view) {
         this.getMessageManager().registerObject(view, true);
-      },
-
-      removeAllMessages() {
-        this.getMessageManager().removeAllMessages();
       },
 
       addMessage({
@@ -193,6 +196,40 @@ sap.ui.define(
       removeMessage() {},
 
       removeBckndMsgForControl() {},
+
+      setCustomValidations(customValidations) {
+        this.customValidations = customValidations;
+      },
+
+      getCustomValidations() {
+        return this.customValidations;
+      },
+
+      checkCustomValidations() {
+        const customValidations = this.getCustomValidations();
+
+        if (!customValidations) {
+          return true;
+        }
+
+        return Object.values(customValidations).every(
+          ({ check, control = {}, target = control.getId(), message }) => {
+            if (check()) {
+              this.getMessageManager().removeMessage({
+                target,
+                text: message,
+              });
+              return true;
+            }
+
+            this.getMessageManager().addMessage({
+              // die Messages können sich aktuell nur auf ein Target beziehen, noch nicht auf ein Control-Binding
+              target: control.getId(),
+            });
+            return false;
+          }
+        );
+      },
     };
   }
 );

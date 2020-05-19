@@ -1,18 +1,27 @@
 sap.ui.define(
-  ["../Base", "sap/ui/core/message/Message", "sap/m/MessageBox"],
-  function (Base, Message, MessageBox) {
-    return {
+  ["sap/ui/base/Object", "sap/ui/core/message/Message", "sap/m/MessageBox"],
+  function (UI5Object, Message, MessageBox) {
+    return UI5Object.extend("errorhandler.library.validation.ServiceError", {
+      // eslint-disable-next-line object-shorthand
+      constructor: function ({ resBundle, messageModel } = {}, ...args) {
+        UI5Object.apply(this, args);
+
+        this.resBundle = resBundle;
+        this.messageModel = messageModel;
+        this.messageBoxIsOpen = false;
+      },
+
       showError({
         appUseable = true,
         error,
         parsedError = this.parseError(error),
       }) {
         if (
-          !Base.getMessageModel()
+          !this.messageModel
             .getData()
             .some((msg) => msg.message === parsedError.message)
         ) {
-          Base.getMessageManager().addMessages(parsedError);
+          sap.ui.getCore().getMessageManager().addMessages(parsedError);
         }
 
         if (appUseable && this.messageBoxOpen) {
@@ -21,18 +30,18 @@ sap.ui.define(
 
         const text = appUseable
           ? parsedError.message
-          : `${parsedError.message} ${Base.getResBundle().getText(
+          : `${parsedError.message} ${this.resBundle.getText(
               "navToLaunchpad"
             )}`;
 
-        this.messageBoxOpen = true;
+        this.messageBoxIsOpen = true;
 
         MessageBox.error(text, {
           actions: [MessageBox.Action.CLOSE],
           onClose: () => {
-            this.messageBoxOpen = false;
+            this.messageBoxIsOpen = false;
 
-            if (!appUseable) {
+            if (!appUseable && sap.ushell) {
               sap.ushell.Container.getService(
                 "CrossApplicationNavigation"
               ).toExternal({
@@ -55,6 +64,6 @@ sap.ui.define(
           type: sap.ui.core.MessageType.Error,
         });
       },
-    };
+    });
   }
 );

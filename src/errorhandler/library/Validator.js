@@ -151,14 +151,14 @@ sap.ui.define(
           .map((validation) => [validation.control.getId(), validation])
       );
 
+      // messageManager.removeAllMessages();
+
       validationsByControl.forEach(
         ({ control, valueState, valueStateText }) => {
           control.setValueState(valueState);
           control.setValueStateText(valueStateText);
         }
       );
-
-      messageManager.removeAllMessages();
 
       Array.from(validationsByControl.values())
         .filter(({ valueState }) => valueState === ValueState.Error)
