@@ -1,20 +1,12 @@
 sap.ui.define(
   [
-    "./handling/CheckBox",
     "sap/ui/core/message/Message",
     "./handling/MessagePopover",
     "sap/ui/model/resource/ResourceModel",
     "./handling/ServiceError",
     "./Validator",
   ],
-  function (
-    CheckBoxHandling,
-    Message,
-    MessagePopover,
-    ResourceModel,
-    ServiceError,
-    Validator
-  ) {
+  function (Message, MessagePopover, ResourceModel, ServiceError, Validator) {
     sap.ui.getCore().initLibrary({
       name: "errorhandler.library",
       version: "1.0.0",
@@ -160,10 +152,6 @@ sap.ui.define(
         return this.errorHandler.showError({
           error: responseText,
         });
-      },
-
-      initMessageEnhancements() {
-        CheckBoxHandling.setShowValueStateForAllCheckBoxes();
       },
 
       getMessagePopover() {
