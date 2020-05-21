@@ -1,12 +1,20 @@
 sap.ui.define(
   [
+    "./CustomTypes",
     "sap/ui/core/message/Message",
     "./handling/MessagePopover",
     "sap/ui/model/resource/ResourceModel",
     "./handling/ServiceError",
     "./Validator",
   ],
-  function (Message, MessagePopover, ResourceModel, ServiceError, Validator) {
+  function (
+    CustomTypes,
+    Message,
+    MessagePopover,
+    ResourceModel,
+    ServiceError,
+    Validator
+  ) {
     sap.ui.getCore().initLibrary({
       name: "errorhandler.library",
       version: "1.0.0",
@@ -24,16 +32,7 @@ sap.ui.define(
         viewModel = appViewModel,
         oDataModels,
         ODataModels = oDataModels,
-        removeAllMessages = true,
       }) {
-        if (removeAllMessages) {
-          this.getMessageManager().removeAllMessages();
-        }
-
-        this.customValidations = [];
-        this.backendMessages = [];
-        this.validator = new Validator();
-
         this.resBundle = new ResourceModel({
           bundleName: "errorhandler.library.i18n.i18n",
         }).getResourceBundle();
@@ -47,6 +46,11 @@ sap.ui.define(
           resBundle: this.resBundle,
           messageModel: this.getMessageModel(),
         });
+
+        this.customValidations = [];
+        this.backendMessages = [];
+        this.customTypes = CustomTypes.init(this.resBundle);
+        this.validator = new Validator();
 
         ODataModels.forEach((model) => {
           Promise.all([
@@ -94,6 +98,10 @@ sap.ui.define(
 
       validate(root) {
         return this.validator.validate(root);
+      },
+
+      getCustomTypes() {
+        return this.customTypes;
       },
 
       waitForAppToBeRendered(viewModel, property) {
