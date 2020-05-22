@@ -4,11 +4,13 @@ sap.ui.define(["./Base", "sap/ui/model/ValidateException"], function (
 ) {
   return BaseType.extend("validationservice.library.customTypes.DecimalType", {
     // eslint-disable-next-line object-shorthand
-    constructor: function (
-      { formatOptions, constraints, invalidValues, required, resBundle },
-      ...args
-    ) {
-      BaseType.apply(this, { required, resBundle }, args);
+    constructor: function ({
+      formatOptions,
+      constraints,
+      invalidValues,
+      ...options
+    }) {
+      BaseType.call(this, options);
 
       this.type = new sap.ui.model.odata.type.Decimal(
         formatOptions,

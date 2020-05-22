@@ -1,14 +1,16 @@
 sap.ui.define(["./Base", "sap/ui/model/ValidateException"], function (
-  Base,
+  BaseType,
   ValidateException
 ) {
-  return Base.extend("validationservice.library.customTypes.Currency", {
+  return BaseType.extend("validationservice.library.customTypes.Currency", {
     // eslint-disable-next-line object-shorthand
-    constructor: function (
-      { formatOptions, constraints, invalidValues = [], required, resBundle },
-      ...args
-    ) {
-      Base.apply(this, { required, resBundle }, args);
+    constructor: function ({
+      formatOptions,
+      constraints,
+      invalidValues = [],
+      ...options
+    }) {
+      BaseType.call(this, options);
 
       this.type = new sap.ui.model.type.Currency();
       this.type.setFormatOptions(formatOptions);

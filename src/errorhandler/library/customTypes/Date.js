@@ -12,16 +12,12 @@ sap.ui.define(["./Base", "sap/ui/model/ValidateException"], function (
 
   return BaseType.extend("validationservice.library.customTypes.DateType", {
     // eslint-disable-next-line object-shorthand
-    constructor: function (
-      {
-        formatOptions = { style: "medium", strictParsing: true },
-        constraints,
-        required,
-        resBundle,
-      } = {},
-      ...args
-    ) {
-      BaseType.apply(this, { required, resBundle }, args);
+    constructor: function ({
+      formatOptions = { style: "medium", strictParsing: true },
+      constraints,
+      ...options
+    } = {}) {
+      BaseType.call(this, options);
 
       const formatOptionsUTC = { UTC: true, ...formatOptions };
 

@@ -12,7 +12,7 @@ sap.ui.define(
       },
 
       showError({
-        appUseable = true,
+        blocking = false,
         error,
         parsedError = this.parseError(error),
       }) {
@@ -24,11 +24,11 @@ sap.ui.define(
           sap.ui.getCore().getMessageManager().addMessages(parsedError);
         }
 
-        if (appUseable && this.messageBoxOpen) {
+        if (!blocking && this.messageBoxOpen) {
           return;
         }
 
-        const text = appUseable
+        const text = blocking
           ? parsedError.message
           : `${parsedError.message} ${this.resBundle.getText(
               "navToLaunchpad"
@@ -41,7 +41,7 @@ sap.ui.define(
           onClose: () => {
             this.messageBoxIsOpen = false;
 
-            if (!appUseable && sap.ushell) {
+            if (blocking && sap.ushell) {
               sap.ushell.Container.getService(
                 "CrossApplicationNavigation"
               ).toExternal({

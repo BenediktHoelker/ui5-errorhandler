@@ -116,7 +116,7 @@ sap.ui.define(["sap/ui/core/ValueState"], function (ValueState) {
       });
   }
 
-  class Validator {
+  return class Validator {
     constructor() {
       this.possibleAggregations = [
         "items",
@@ -143,7 +143,7 @@ sap.ui.define(["sap/ui/core/ValueState"], function (ValueState) {
       const validations = [parents]
         // parents can be an array or a single control
         .flat()
-        .reduce((acc, curr) => acc.concat(this.getValidations([], curr)), []);
+        .reduce((acc, curr) => [...acc, ...this.getValidations([], curr)]);
 
       const isValid = validations.every(
         ({ valueState }) => valueState !== ValueState.Error
@@ -184,20 +184,17 @@ sap.ui.define(["sap/ui/core/ValueState"], function (ValueState) {
           .reduce((arr, ctrl) => this.getValidations(arr, ctrl), acc);
       }
 
-      return acc
-        .concat(
-          validateRequired({
-            control,
-            propsToValidate,
-          }),
-          validateConstraints({
-            control,
-            propsToValidate,
-          })
-        )
-        .flat();
+      return [
+        ...acc,
+        ...validateRequired({
+          control,
+          propsToValidate,
+        }),
+        ...validateConstraints({
+          control,
+          propsToValidate,
+        }),
+      ];
     }
-  }
-
-  return Validator;
+  };
 });

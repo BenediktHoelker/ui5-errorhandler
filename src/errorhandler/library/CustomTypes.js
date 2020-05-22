@@ -26,7 +26,7 @@ sap.ui.define(
     StringType
   ) {
     return {
-      init(resBundle) {
+      init(options) {
         const today = new Date();
 
         // die folgenden Datentypen können für die Eingabe eines Datums verwendet werden
@@ -45,53 +45,53 @@ sap.ui.define(
 
         return {
           booleanRequired: new BooleanType({
+            ...options,
             required: true,
-            resBundle,
           }),
           currencyRequiredNoMeasure: new CurrencyType({
             formatOptions: {
               showMeasure: false,
             },
             required: true,
-            resBundle,
+            ...options,
           }),
           requiredMediumDate: new DateType({
             required: true,
-            resBundle,
+            ...options,
           }),
-          mediumDate: new DateType(),
+          mediumDate: new DateType(options),
           requiredMediumDateMaxToday: new DateType({
             constraints: {
               maximum: today,
             },
             required: true,
-            resBundle,
+            ...options,
           }),
           requiredMediumDateMinToday: new DateType({
             constraints: {
               minimum: yesterday,
             },
             required: true,
-            resBundle,
+            ...options,
           }),
           mediumDateMinToday: new DateType({
             constraints: {
               minimum: yesterday,
             },
-            resBundle,
+            ...options,
           }),
           requiredMediumDateMax18YAgo: new DateType({
             constraints: {
               maximum: date18YearsAgo,
             },
             required: true,
-            resBundle,
+            ...options,
           }),
           mediumDateMax18YAgo: new DateType({
             constraints: {
               maximum: date18YearsAgo,
             },
-            resBundle,
+            ...options,
           }),
           requiredP13S3Not0: new DecimalType({
             constraints: {
@@ -100,7 +100,7 @@ sap.ui.define(
               scale: 3,
             },
             invalidValues: [0],
-            resBundle,
+            ...options,
           }),
           requiredP13S3Not0Positiv: new DecimalType({
             constraints: {
@@ -110,51 +110,51 @@ sap.ui.define(
               scale: 3,
             },
             invalidValues: [0],
-            resBundle,
+            ...options,
           }),
-          email: new EmailType({ resBundle }),
+          email: new EmailType({ ...options }),
           emailRequired: new EmailType({
             constraints: {
               minLength: 1,
             },
-            resBundle,
+            ...options,
           }),
           IBANRequired: new IBANType({
             constraints: {
               minLength: 1,
             },
-            resBundle,
+            ...options,
           }),
           requiredIntegerNot0: new IntegerType({
             required: true,
             invalidValues: [0],
-            resBundle,
+            ...options,
           }),
           positiveInteger: new IntegerType({
             required: false,
             range: {
               minimum: 0,
             },
-            resBundle,
+            ...options,
           }),
           NWRRequired: new NWRType({
             constraints: {
               minLength: 1,
               maxLength: 21,
             },
-            resBundle,
+            ...options,
           }),
           NWR: new NWRType({
             constraints: {
               maxLength: 21,
             },
-            resBundle,
+            ...options,
           }),
           phoneRequired: new PhoneNumberType({
             constraints: {
               minLength: 1,
             },
-            resBundle,
+            ...options,
           }),
           ratingRequired: new RatingType({
             constraints: {
@@ -162,13 +162,13 @@ sap.ui.define(
               maximum: 5,
             },
             required: true,
-            resBundle,
+            ...options,
           }),
           stringRequired: new StringType({
             constraints: {
               minLength: 1,
             },
-            resBundle,
+            ...options,
           }),
         };
       },

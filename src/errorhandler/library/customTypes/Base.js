@@ -1,23 +1,12 @@
-sap.ui.define(
-  ["sap/ui/model/resource/ResourceModel", "sap/ui/model/SimpleType"],
-  function (ResourceModel, SimpleType) {
-    return SimpleType.extend("validationservice.library.customTypes.Base", {
-      // eslint-disable-next-line object-shorthand
-      constructor: function ({ required } = {}, ...args) {
-        SimpleType.apply(this, args);
+sap.ui.define(["sap/ui/model/SimpleType"], function (SimpleType) {
+  return SimpleType.extend("validationservice.library.customTypes.Base", {
+    // eslint-disable-next-line object-shorthand
+    constructor: function (options) {
+      SimpleType.apply(this);
 
-        this.required = required;
-        this.resBundle = this.getResBundle();
-      },
-
-      getResBundle() {
-        if (!this.resBundle) {
-          this.resBundle = new ResourceModel({
-            bundleName: "validationservice.library.i18n.i18n",
-          }).getResourceBundle();
-        }
-        return this.resBundle;
-      },
-    });
-  }
-);
+      Object.entries(options).forEach(([key, value]) => {
+        this[key] = value;
+      });
+    },
+  });
+});

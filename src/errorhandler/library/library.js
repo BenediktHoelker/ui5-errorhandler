@@ -4,7 +4,7 @@ sap.ui.define(
     "sap/ui/core/message/Message",
     "./handling/MessagePopover",
     "sap/ui/model/resource/ResourceModel",
-    "./handling/ServiceError",
+    "./handling/ODataErrorHandling",
     "./Validator",
   ],
   function (
@@ -12,7 +12,7 @@ sap.ui.define(
     Message,
     MessagePopover,
     ResourceModel,
-    ServiceError,
+    ODataErrorHandling,
     Validator
   ) {
     sap.ui.getCore().initLibrary({
@@ -37,7 +37,7 @@ sap.ui.define(
           bundleName: "errorhandler.library.i18n.i18n",
         }).getResourceBundle();
 
-        this.errorHandler = new ServiceError({
+        this.ODataErrorHandling = new ODataErrorHandling({
           resBundle: this.resBundle,
           messageModel: this.getMessageModel(),
         });
@@ -49,7 +49,7 @@ sap.ui.define(
 
         this.customValidations = [];
         this.backendMessages = [];
-        this.customTypes = CustomTypes.init(this.resBundle);
+        this.customTypes = CustomTypes.init({ resBundle: this.resBundle });
         this.validator = new Validator();
 
         ODataModels.forEach((model) => {
@@ -59,8 +59,8 @@ sap.ui.define(
           ]).then(() => {
             viewModel.setProperty("/busy", false);
 
-            this.errorHandler.showError({
-              appUseable: false,
+            this.showError({
+              blocking: true,
               error: this.resBundle.getText("metadataLoadingFailed"),
             });
           });
@@ -73,7 +73,7 @@ sap.ui.define(
             );
 
             if (error) {
-              this.errorHandler.showError({
+              this.showError({
                 error,
               });
             }
@@ -147,17 +147,21 @@ sap.ui.define(
         ).map((string) => JSON.parse(string));
       },
 
+      showError(params) {
+        this.ODataErrorHandling.showError(params);
+      },
+
       showConnectionError(event) {
         const response = event.getParameter("response");
         const { responseText } = response;
 
         if (responseText.includes("Timed Out") || response.statusCode === 504) {
-          return this.errorHandler.showError({
+          return this.showError({
             error: this.resBundle.getText("timedOut"),
           });
         }
 
-        return this.errorHandler.showError({
+        return this.showError({
           error: responseText,
         });
       },
@@ -215,6 +219,7 @@ sap.ui.define(
                 target,
                 text: message,
               });
+
               return true;
             }
 
@@ -222,6 +227,7 @@ sap.ui.define(
               // die Messages können sich aktuell nur auf ein Target beziehen, noch nicht auf ein Control-Binding
               target: control.getId(),
             });
+
             return false;
           }
         );

@@ -4,8 +4,8 @@ sap.ui.define(["./Base", "sap/ui/model/ValidateException"], function (
 ) {
   return BaseType.extend("validationservice.library.customTypes.EmailType", {
     // eslint-disable-next-line object-shorthand
-    constructor: function ({ required, resBundle, constraints }, ...args) {
-      BaseType.apply(this, { required, resBundle }, args);
+    constructor: function ({ constraints, ...options }) {
+      BaseType.call(this, options);
 
       this.type = new sap.ui.model.type.String();
       this.type.setConstraints(constraints);

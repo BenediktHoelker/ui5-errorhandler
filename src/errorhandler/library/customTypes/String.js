@@ -1,8 +1,8 @@
 sap.ui.define(["./Base"], function (BaseType) {
   return BaseType.extend("validationservice.customTypes.StringType", {
     // eslint-disable-next-line object-shorthand
-    constructor: function ({ constraints, required, resBundle }, ...args) {
-      BaseType.apply(this, { required, resBundle }, args);
+    constructor: function ({ constraints, ...options }) {
+      BaseType.call(this, options);
 
       this.type = new sap.ui.model.type.String();
       this.type.setConstraints(constraints);

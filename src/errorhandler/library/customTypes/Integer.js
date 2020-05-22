@@ -4,18 +4,14 @@ sap.ui.define(["./Base", "sap/ui/model/ValidateException"], function (
 ) {
   return BaseType.extend("validationservice.library.customTypes.IntegerType", {
     // eslint-disable-next-line object-shorthand
-    constructor: function (
-      {
-        constraints,
-        formatOptions,
-        invalidValues = [],
-        range,
-        required,
-        resBundle,
-      } = {},
-      ...args
-    ) {
-      BaseType.apply(this, { required, resBundle }, args);
+    constructor: function ({
+      constraints,
+      formatOptions,
+      invalidValues = [],
+      range,
+      ...options
+    } = {}) {
+      BaseType.call(this, options);
 
       this.type = new sap.ui.model.type.Integer();
 

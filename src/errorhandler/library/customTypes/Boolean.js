@@ -4,8 +4,8 @@ sap.ui.define(["./Base", "sap/ui/model/ValidateException"], function (
 ) {
   return Base.extend("validationservice.library.customTypes.Boolean", {
     // eslint-disable-next-line object-shorthand
-    constructor: function ({ required, resBundle }, ...args) {
-      Base.apply(this, { required, resBundle }, args);
+    constructor: function (options) {
+      Base.call(this, options);
 
       // sap.ui.model.type.Boolean besitzt keine FormatOptions und Constraints
       this.type = new sap.ui.model.type.Boolean();
