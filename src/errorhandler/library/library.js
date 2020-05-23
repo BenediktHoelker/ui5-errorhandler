@@ -1,20 +1,11 @@
 sap.ui.define(
   [
-    "./CustomTypes",
     "sap/ui/core/message/Message",
     "./handling/MessagePopover",
-    "sap/ui/model/resource/ResourceModel",
     "./handling/ODataErrorHandling",
-    "./Validator",
+    "sap/ui/model/resource/ResourceModel",
   ],
-  function (
-    CustomTypes,
-    Message,
-    MessagePopover,
-    ResourceModel,
-    ODataErrorHandling,
-    Validator
-  ) {
+  function (Message, MessagePopover, ODataErrorHandling, ResourceModel) {
     sap.ui.getCore().initLibrary({
       name: "errorhandler.library",
       version: "1.0.0",
@@ -47,14 +38,11 @@ sap.ui.define(
           messageModel: this.getMessageModel(),
         });
 
-        this.customValidations = [];
         this.backendMessages = [];
-        this.customTypes = CustomTypes.init({ resBundle: this.resBundle });
-        this.validator = new Validator();
 
         ODataModels.forEach((model) => {
           Promise.all([
-            this.waitForAppToBeRendered(viewModel, "/isRendered"),
+            this.waitForAppToBeRendered(viewModel),
             this.onMetadataFailed(model),
           ]).then(() => {
             viewModel.setProperty("/busy", false);
@@ -88,30 +76,14 @@ sap.ui.define(
         });
       },
 
-      getMessageModel() {
-        return this.getMessageManager().getMessageModel();
-      },
-
-      getMessageManager() {
-        return sap.ui.getCore().getMessageManager();
-      },
-
-      validate(root) {
-        return this.validator.validate(root);
-      },
-
-      getCustomTypes() {
-        return this.customTypes;
-      },
-
-      waitForAppToBeRendered(viewModel, property) {
-        if (viewModel.getProperty(property)) {
+      waitForAppToBeRendered(viewModel) {
+        if (viewModel.getProperty("/isRendered")) {
           return Promise.resolve();
         }
 
         return new Promise((resolve) =>
           viewModel.attachPropertyChange(() => {
-            if (viewModel.getProperty(property)) {
+            if (viewModel.getProperty("/isRendered")) {
               resolve();
             }
           })
@@ -130,7 +102,7 @@ sap.ui.define(
 
       getNewBckndMsgs(event) {
         const newMessages = event.getParameter("newMessages") || [];
-        const uniqueMessages = this.getUniqueMsgs(newMessages);
+        const uniqueMessages = this.getUnique(newMessages);
 
         const duplicates = newMessages.filter(
           (msg) => !uniqueMessages.includes(msg)
@@ -141,7 +113,7 @@ sap.ui.define(
         return uniqueMessages;
       },
 
-      getUniqueMsgs(messages) {
+      getUnique(messages) {
         return Array.from(
           new Set(messages.map((msg) => JSON.stringify(msg)))
         ).map((string) => JSON.parse(string));
@@ -166,18 +138,60 @@ sap.ui.define(
         });
       },
 
-      getMessagePopover() {
-        return this.messagePopover.getMessagePopover();
+      getMessageModel() {
+        return this.getMessageManager().getMessageModel();
+      },
+
+      getMessageManager() {
+        return sap.ui.getCore().getMessageManager();
       },
 
       setMessageManager(view) {
         this.getMessageManager().registerObject(view, true);
       },
 
+      getMessagePopover() {
+        return this.messagePopover.getMessagePopover();
+      },
+
+      getMsgProcessor() {
+        if (!this.msgProcessor) {
+          this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
+          this.getMessageManager().registerMessageProcessor(this.msgProcessor);
+        }
+        return this.msgProcessor;
+      },
+
+      removeMessages({ target }) {
+        const msgModel = this.getMessageManager().getMessageModel();
+        const messages = msgModel
+          .getMessages()
+          .filter((msg) => msg.target === target);
+
+        this.getMessageManager().removeMessages(messages);
+      },
+
+      getBindingName(input) {
+        return ["value", "selected", "selectedKey", "dateValue"].find((name) =>
+          input.getBinding(name)
+        );
+      },
+
+      getValMsgTarget(input) {
+        const isSmartField =
+          input.getMetadata().getElementName() ===
+          "sap.ui.comp.smartfield.SmartField";
+        return isSmartField
+          ? `${input.getId()}-input/value`
+          : `${input.getId()}/${this.getBindingName(input)}`;
+      },
+
       addMessage({
         text,
+        input,
         message = text,
-        target,
+        processor = this.getMsgProcessor(),
+        target = this.getValMsgTarget(input),
         additionalText,
         type = sap.ui.core.MessageType.Error,
       }) {
@@ -185,51 +199,11 @@ sap.ui.define(
           new Message({
             additionalText,
             target,
-            processor: this.getMsgProcessor(),
             message,
+            processor,
             type,
             validation: true,
           })
-        );
-      },
-
-      removeMessage() {},
-
-      removeBckndMsgForControl() {},
-
-      setCustomValidations(customValidations) {
-        this.customValidations = customValidations;
-      },
-
-      getCustomValidations() {
-        return this.customValidations;
-      },
-
-      checkCustomValidations() {
-        const customValidations = this.getCustomValidations();
-
-        if (!customValidations) {
-          return true;
-        }
-
-        return Object.values(customValidations).every(
-          ({ check, control = {}, target = control.getId(), message }) => {
-            if (check()) {
-              this.getMessageManager().removeMessage({
-                target,
-                text: message,
-              });
-
-              return true;
-            }
-
-            this.getMessageManager().addMessage({
-              // die Messages können sich aktuell nur auf ein Target beziehen, noch nicht auf ein Control-Binding
-              target: control.getId(),
-            });
-
-            return false;
-          }
         );
       },
     };
