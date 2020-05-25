@@ -18,3 +18,4 @@ APIExternalProducer.js
 /dist/
 node_modules
 /.env
+.env
