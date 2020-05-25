@@ -1,7 +1,7 @@
 sap.ui.define(
   ["sap/ui/base/Object", "sap/ui/core/message/Message", "sap/m/MessageBox"],
   function (UI5Object, Message, MessageBox) {
-    return UI5Object.extend("errorhandler.library.validation.ServiceError", {
+    return UI5Object.extend("errorhandler.validation.ServiceError", {
       // eslint-disable-next-line object-shorthand
       constructor: function ({ resBundle, messageModel } = {}, ...args) {
         UI5Object.apply(this, args);

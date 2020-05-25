@@ -6,7 +6,7 @@ sap.ui.define(
     "sap/m/library",
   ],
   function (UI5Object, Button, MessagePopover, SAPMLibrary) {
-    return UI5Object.extend("errorhandler.library.validation.MessagePopover", {
+    return UI5Object.extend("errorhandler.validation.MessagePopover", {
       // eslint-disable-next-line object-shorthand
       constructor: function ({ resBundle, messageModel } = {}, ...args) {
         UI5Object.apply(this, args);
@@ -31,7 +31,7 @@ sap.ui.define(
           items: {
             path: "message>/",
             template: sap.ui.xmlfragment(
-              "errorhandler.library.fragments.MessageItem",
+              "errorhandler.fragments.MessageItem",
               this
             ),
           },

@@ -7,7 +7,7 @@ sap.ui.define(
   ],
   function (Message, MessagePopover, ODataErrorHandling, ResourceModel) {
     sap.ui.getCore().initLibrary({
-      name: "errorhandler.library",
+      name: "errorhandler",
       version: "1.0.0",
       dependencies: ["sap.ui.core"],
       noLibraryCSS: true,
@@ -25,7 +25,7 @@ sap.ui.define(
         ODataModels = oDataModels,
       }) {
         this.resBundle = new ResourceModel({
-          bundleName: "errorhandler.library.i18n.i18n",
+          bundleName: "errorhandler.i18n.i18n",
         }).getResourceBundle();
 
         this.ODataErrorHandling = new ODataErrorHandling({
@@ -138,22 +138,6 @@ sap.ui.define(
         });
       },
 
-      getMessageModel() {
-        return this.getMessageManager().getMessageModel();
-      },
-
-      getMessageManager() {
-        return sap.ui.getCore().getMessageManager();
-      },
-
-      setMessageManager(view) {
-        this.getMessageManager().registerObject(view, true);
-      },
-
-      getMessagePopover() {
-        return this.messagePopover.getMessagePopover();
-      },
-
       getMsgProcessor() {
         if (!this.msgProcessor) {
           this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
@@ -205,6 +189,22 @@ sap.ui.define(
             validation: true,
           })
         );
+      },
+
+      getMessageModel() {
+        return this.getMessageManager().getMessageModel();
+      },
+
+      getMessageManager() {
+        return sap.ui.getCore().getMessageManager();
+      },
+
+      setMessageManager(view) {
+        this.getMessageManager().registerObject(view, true);
+      },
+
+      getMessagePopover() {
+        return this.messagePopover.getMessagePopover();
       },
     };
   }

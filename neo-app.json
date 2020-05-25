@@ -2,7 +2,7 @@
   "welcomeFile": "index.html",
   "routes": [
     {
-      "path": "/resources/errorhandler/library",
+      "path": "/resources/errorhandler",
       "target": {
         "type": "application",
         "name": "errorhandlerlibrary"

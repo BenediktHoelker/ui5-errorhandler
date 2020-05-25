@@ -20,7 +20,7 @@
 		"clean": "rimraf dist",
 		"build": "rimraf dist && ui5 build --include-task=generateManifestBundle generateCachebusterInfo ",
 		"build-for-deploy": "npm run build && npm run flatten && npm run clean-after-flatten",
-		"flatten": "cp -r dist/resources/errorhandler/library/* dist && cp dist/resources/errorhandler/library/.library dist && cp dist/resources/.Ui5RepositoryTextFiles dist",
+		"flatten": "cp -r dist/resources/errorhandler/* dist && cp dist/resources/errorhandler/.library dist && cp dist/resources/.Ui5RepositoryTextFiles dist",
 		"clean-after-flatten": "rimraf dist/resources dist/test-resources"
 	},
 	"license": "UNLICENSED"
