@@ -149,7 +149,7 @@ sap.ui.define(
       removeMessages({ target }) {
         const msgModel = this.getMessageManager().getMessageModel();
         const messages = msgModel
-          .getMessages()
+          .getData()
           .filter((msg) => msg.target === target);
 
         this.getMessageManager().removeMessages(messages);
