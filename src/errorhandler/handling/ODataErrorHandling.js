@@ -37,6 +37,7 @@ sap.ui.define(
         this.messageBoxIsOpen = true;
 
         MessageBox.error(text, {
+          id: "serviceErrorMessageBox",
           actions: [MessageBox.Action.CLOSE],
           onClose: () => {
             this.messageBoxIsOpen = false;
