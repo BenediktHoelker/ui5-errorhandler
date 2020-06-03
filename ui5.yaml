@@ -9,6 +9,11 @@ framework:
 type: library
 builder:
   customTasks:
+    - name: ui5-task-transpile
+      afterTask: replaceVersion
+      configuration:
+        debug: true
+        removeConsoleStatements: true
     - name: ui5-task-nwabap-deployer
       afterTask: uglify
       configuration:
@@ -21,6 +26,6 @@ builder:
         ui5:
           language: DE
           package: Z_FIORI_REUSE
-          bspContainer: ZREUSERRORHALIB
+          bspContainer: ZERRORHANDLER
           bspContainerText: Error Handler
           calculateApplicationIndex: true
