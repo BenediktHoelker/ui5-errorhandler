@@ -59,11 +59,11 @@ sap.ui.define(
         });
       },
 
-      getUserInfos(userInfos) {
+      getUserInfos(user) {
         // falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
         // ansonsten wird der User der Shell verwendet
-        if (userInfos.every(Boolean)) {
-          return this.resBundle.getText("userInformationLong", userInfos);
+        if (user.every(Boolean)) {
+          return this.resBundle.getText("userInformationLong", user);
         }
 
         return this.resBundle.getText(
