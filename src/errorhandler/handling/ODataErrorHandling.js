@@ -24,7 +24,7 @@ sap.ui.define(
           sap.ui.getCore().getMessageManager().addMessages(parsedError);
         }
 
-        if (!blocking && this.messageBoxOpen) {
+        if (!blocking && this.messageBoxIsOpen) {
           return;
         }
 
