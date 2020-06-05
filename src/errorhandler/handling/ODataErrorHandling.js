@@ -8,7 +8,9 @@ sap.ui.define(
 
         this.resBundle = resBundle;
         this.messageModel = messageModel;
-        this.messageBoxIsOpen = false;
+
+        // Must not be initialised (when there are multiple components using the error handler within one App)
+        // if(this.messageBoxIsOpen = false;
       },
 
       showError({
@@ -24,7 +26,7 @@ sap.ui.define(
           sap.ui.getCore().getMessageManager().addMessages(parsedError);
         }
 
-        if (!blocking && this.messageBoxOpen) {
+        if (!blocking && this.messageBoxIsOpen) {
           return;
         }
 
@@ -37,6 +39,7 @@ sap.ui.define(
         this.messageBoxIsOpen = true;
 
         MessageBox.error(text, {
+          id: "serviceErrorMessageBox",
           actions: [MessageBox.Action.CLOSE],
           onClose: () => {
             this.messageBoxIsOpen = false;

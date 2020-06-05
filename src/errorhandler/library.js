@@ -125,9 +125,9 @@ sap.ui.define(
 
       showConnectionError(event) {
         const response = event.getParameter("response");
-        const { responseText } = response;
+        const { responseText, statusText } = response;
 
-        if (responseText.includes("Timed Out") || response.statusCode === 504) {
+        if (responseText.includes("Timed Out") || statusText === 504) {
           return this.showError({
             error: this.resBundle.getText("timedOut"),
           });
@@ -149,7 +149,7 @@ sap.ui.define(
       removeMessages({ target }) {
         const msgModel = this.getMessageManager().getMessageModel();
         const messages = msgModel
-          .getMessages()
+          .getData()
           .filter((msg) => msg.target === target);
 
         this.getMessageManager().removeMessages(messages);
@@ -197,10 +197,6 @@ sap.ui.define(
 
       getMessageManager() {
         return sap.ui.getCore().getMessageManager();
-      },
-
-      setMessageManager(view) {
-        this.getMessageManager().registerObject(view, true);
       },
 
       getMessagePopover() {

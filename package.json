@@ -12,7 +12,13 @@
 		"eslint-plugin-jsx-a11y": "^6.2.3",
 		"eslint-plugin-prettier": "^3.1.3",
 		"prettier": "^2.0.5",
-		"rimraf": "^3.0.2"
+		"rimraf": "^3.0.2",
+		"ui5-task-transpile": "^0.2.0"
+	},
+	"ui5": {
+		"dependencies": [
+			"ui5-task-transpile"
+		]
 	},
 	"scripts": {
 		"clean": "rimraf dist",
