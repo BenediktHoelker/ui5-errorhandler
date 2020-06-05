@@ -114,9 +114,15 @@ sap.ui.define(
       },
 
       getUnique(messages) {
-        return Array.from(
-          new Set(messages.map((msg) => JSON.stringify(msg)))
-        ).map((string) => JSON.parse(string));
+        let messagesMap = {};
+
+        messages.forEach((msg) => {
+          const key = msg.message ? msg.message.toString() : "01";
+
+          messagesMap[key] = msg;
+        });
+
+        return Object.values(messagesMap);
       },
 
       showError(params) {

@@ -30,7 +30,7 @@ sap.ui.define(
           return;
         }
 
-        const text = blocking
+        const text = !blocking
           ? parsedError.message
           : `${parsedError.message} ${this.resBundle.getText(
               "navToLaunchpad"
