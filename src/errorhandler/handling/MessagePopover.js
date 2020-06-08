@@ -46,13 +46,11 @@ sap.ui.define(
 
         const subject = bundle.getText(
           "mailTitle",
-          appComponent ? appComponent.getManifest()["sap.app"].title : []
+          appComponent
+            ? appComponent.getManifest()["sap.app"].title
+            : [window.location.href]
         );
-        const body = appComponent
-          ? this.getUserInfos(
-              appComponent.getModel("user").getProperty("/user")
-            ) + this.getMsgInfos()
-          : this.getMsgInfos();
+        const body = this.getUserInfos() + this.getMsgInfos();
 
         SAPMLibrary.URLHelper.triggerEmail({
           address: bundle.getText("mailAddress"),
@@ -69,7 +67,12 @@ sap.ui.define(
         ).getCurrentApplication().componentInstance;
       },
 
-      getUserInfos(user) {
+      getUserInfos() {
+        if (!sap.ushell || !sap.ushell.Container) return "";
+
+        const appComponent = this.getAppComponent();
+        const user = appComponent.getModel("user").getProperty("/user");
+
         // falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
         // ansonsten wird der User der Shell verwendet
         if (user.every(Boolean)) {
