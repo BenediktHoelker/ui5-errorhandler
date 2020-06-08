@@ -13,13 +13,7 @@
 		"eslint-plugin-prettier": "^3.1.3",
 		"eslint-plugin-react": "^7.20.0",
 		"prettier": "^2.0.5",
-		"rimraf": "^3.0.2",
-		"ui5-task-transpile": "^0.2.0"
-	},
-	"ui5": {
-		"dependencies": [
-			"ui5-task-transpile"
-		]
+		"rimraf": "^3.0.2"
 	},
 	"scripts": {
 		"clean": "rimraf dist",
