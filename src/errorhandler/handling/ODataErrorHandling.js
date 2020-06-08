@@ -8,9 +8,6 @@ sap.ui.define(
 
         this.resBundle = resBundle;
         this.messageModel = messageModel;
-
-        // Must not be initialised (when there are multiple components using the error handler within one App)
-        // if(this.messageBoxIsOpen = false;
       },
 
       showError({
