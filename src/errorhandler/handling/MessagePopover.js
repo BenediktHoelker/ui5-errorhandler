@@ -42,21 +42,31 @@ sap.ui.define(
 
       triggerEmail() {
         const bundle = this.resBundle;
-        const appComponent = sap.ushell.Container.getService(
-          "AppLifeCycle"
-        ).getCurrentApplication().componentInstance;
+        const appComponent = this.getAppComponent();
+
+        const subject = bundle.getText(
+          "mailTitle",
+          appComponent ? appComponent.getManifest()["sap.app"].title : []
+        );
+        const body = appComponent
+          ? this.getUserInfos(
+              appComponent.getModel("user").getProperty("/user")
+            ) + this.getMsgInfos()
+          : this.getMsgInfos();
 
         SAPMLibrary.URLHelper.triggerEmail({
           address: bundle.getText("mailAddress"),
-          subject: bundle.getText(
-            "mailTitle",
-            appComponent.getManifest()["sap.app"].title
-          ),
-          body:
-            this.getUserInfos(
-              appComponent.getModel("user").getProperty("/user")
-            ) + this.getMsgInfos(),
+          subject,
+          body,
         });
+      },
+
+      getAppComponent() {
+        if (!sap.ushell || !sap.ushell.Container) return undefined;
+
+        return sap.ushell.Container.getService(
+          "AppLifeCycle"
+        ).getCurrentApplication().componentInstance;
       },
 
       getUserInfos(user) {

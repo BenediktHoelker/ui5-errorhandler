@@ -114,7 +114,7 @@ sap.ui.define(
       },
 
       getUnique(messages) {
-        let messagesMap = {};
+        const messagesMap = {};
 
         messages.forEach((msg) => {
           const key = msg.message ? msg.message.toString() : "01";
@@ -134,14 +134,10 @@ sap.ui.define(
         const { responseText, statusText } = response;
 
         if (responseText.includes("Timed Out") || statusText === 504) {
-          return this.showError({
+          this.showError({
             error: this.resBundle.getText("timedOut"),
           });
         }
-
-        // return this.showError({
-        //   error: responseText,
-        // });
       },
 
       getMsgProcessor() {
