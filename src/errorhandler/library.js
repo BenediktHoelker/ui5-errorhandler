@@ -44,6 +44,13 @@ sap.ui.define(
         this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
         this.getMessageManager().registerMessageProcessor(this.msgProcessor);
 
+        this.registerODataModel({
+          ODataModels,
+          viewModel,
+        });
+      },
+
+      registerODataModel({ ODataModels, viewModel }) {
         ODataModels.forEach((model) => {
           Promise.all([
             this.service.waitForAppToBeRendered(viewModel),
