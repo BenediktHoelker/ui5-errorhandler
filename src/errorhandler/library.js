@@ -181,6 +181,13 @@ sap.ui.define(
         additionalText,
         type = sap.ui.core.MessageType.Error,
       }) {
+        // Wenn das Binding auf das sich die Message bezieht keinen Typen besitzt, dann wird die Message bei Änderung des Binding-Wertes nicht wieder automatisch entfernt
+        const binding = input.getBinding(this.getBindingName(input));
+        if (!binding.getType()) {
+          const stringType = new sap.ui.model.type.String();
+          binding.setType(stringType, "string");
+        }
+
         this.getMessageManager().addMessages(
           new Message({
             additionalText,
