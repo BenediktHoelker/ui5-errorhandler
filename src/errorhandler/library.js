@@ -131,9 +131,9 @@ sap.ui.define(
 
       showConnectionError(event) {
         const response = event.getParameter("response");
-        const { responseText, statusText } = response;
+        const { responseText, statusCode } = response;
 
-        if (responseText.includes("Timed Out") || statusText === 504) {
+        if (responseText.includes("Timed Out") || statusCode === 504) {
           this.showError({
             error: this.resBundle.getText("timedOut"),
           });
