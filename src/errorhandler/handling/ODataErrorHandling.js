@@ -26,9 +26,7 @@ sap.ui.define(
           sap.ui.getCore().getMessageManager().addMessages(parsedError);
         }
 
-        if (!blocking && this.messageBoxIsOpen) {
-          return;
-        }
+        if (!blocking || this.messageBoxIsOpen) return;
 
         const text = !blocking
           ? parsedError.message
