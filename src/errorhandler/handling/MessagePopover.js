@@ -75,8 +75,13 @@ sap.ui.define(
 
         // falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
         // ansonsten wird der User der Shell verwendet
-        if (user.every(Boolean)) {
-          return this.resBundle.getText("userInformationLong", user);
+        if (user) {
+          return this.resBundle.getText("userInformationLong", [
+            user.PersonalFullName,
+            user.UserName,
+            user.PlantName,
+            user.Plant,
+          ]);
         }
 
         return this.resBundle.getText(
