@@ -126,7 +126,9 @@ sap.ui.define(
         return this.messagePopover.getMessagePopover();
       },
 
-      /* ======= private ======== */
+      /** =================================================
+       *                       private
+       *  ================================================= */
 
       waitForAppToBeRendered(viewModel) {
         if (viewModel.getProperty("/isRendered")) {
