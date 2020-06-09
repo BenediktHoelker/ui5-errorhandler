@@ -3,9 +3,9 @@ sap.ui.define(
     "sap/ui/core/message/Message",
     "./handling/MessagePopover",
     "sap/ui/model/resource/ResourceModel",
-    "./Service",
+    "./handling/ODataErrorHandling",
   ],
-  function (Message, MessagePopover, ResourceModel, Service) {
+  function (Message, MessagePopover, ResourceModel, ODataErrorHandling) {
     sap.ui.getCore().initLibrary({
       name: "errorhandler",
       version: "1.0.0",
@@ -18,12 +18,7 @@ sap.ui.define(
     });
 
     return {
-      init({
-        appViewModel,
-        viewModel = appViewModel,
-        oDataModels,
-        ODataModels = oDataModels,
-      }) {
+      init({ viewModel, ODataModels }) {
         this.resBundle = new ResourceModel({
           bundleName: "errorhandler.i18n.i18n",
         }).getResourceBundle();
@@ -33,46 +28,42 @@ sap.ui.define(
           messageModel: this.getMessageModel(),
         });
 
-        this.service = new Service({
-          resBundle: this.resBundle,
-          messageManager: this.getMessageManager(),
-          messageModel: this.getMessageModel(),
+        this.ODataErrorHandling = new ODataErrorHandling({
+          resBundle,
+          messageModel,
         });
 
         this.backendMessages = [];
 
-        this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
-        this.getMessageManager().registerMessageProcessor(this.msgProcessor);
-
-        this.registerODataModel({
+        this.registerModels({
           ODataModels,
           viewModel,
         });
       },
 
-      registerODataModel({ ODataModels, viewModel }) {
+      registerModels({ ODataModels, viewModel }) {
         ODataModels.forEach((model) => {
           Promise.all([
-            this.service.waitForAppToBeRendered(viewModel),
-            this.service.onMetadataFailed(model),
+            this.waitForAppToBeRendered(viewModel),
+            this.onMetadataFailed(model),
           ]).then(() => {
             viewModel.setProperty("/busy", false);
 
-            this.service.showError({
+            this.showError({
               blocking: true,
               error: this.resBundle.getText("metadataLoadingFailed"),
             });
           });
 
           model.attachMessageChange((oEvent) => {
-            this.backendMessages = this.service.getNewBckndMsgs(oEvent);
+            this.backendMessages = this.getNewBckndMsgs(oEvent);
 
             const error = this.backendMessages.find(
               (message) => message.getType() === sap.ui.core.MessageType.Error
             );
 
             if (error) {
-              this.service.showError({
+              this.showError({
                 error,
               });
             }
@@ -81,14 +72,14 @@ sap.ui.define(
           model.attachRequestFailed((event) => {
             // falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
             if (this.backendMessages.length === 0) {
-              this.service.showConnectionError(event);
+              this.showConnectionError(event);
             }
           });
         });
       },
 
       removeMessages({ target }) {
-        const msgModel = this.getMessageManager().getMessageModel();
+        const msgModel = this.getMessageModel();
         const messages = msgModel
           .getData()
           .filter((msg) => msg.target === target);
@@ -100,16 +91,15 @@ sap.ui.define(
         text,
         input,
         message = text,
-        processor = this.msgProcessor,
-        target = this.service.getValMsgTarget(input),
+        target = this.getValMsgTarget(input),
         additionalText,
         type = sap.ui.core.MessageType.Error,
       }) {
         // Wenn das Binding auf das sich die Message bezieht keinen Typen besitzt, dann wird die Message bei Änderung des Binding-Wertes nicht wieder automatisch entfernt
-        const binding = input.getBinding(this.service.getBindingName(input));
+        const binding = input.getBinding(this.getBindingName(input));
+
         if (!binding.getType()) {
-          const stringType = new sap.ui.model.type.String();
-          binding.setType(stringType, "string");
+          binding.setType(new sap.ui.model.type.String(), "string");
         }
 
         this.getMessageManager().addMessages(
@@ -134,6 +124,88 @@ sap.ui.define(
 
       getMessagePopover() {
         return this.messagePopover.getMessagePopover();
+      },
+
+      /* ======= private ======== */
+
+      waitForAppToBeRendered(viewModel) {
+        if (viewModel.getProperty("/isRendered")) {
+          return Promise.resolve();
+        }
+
+        return new Promise((resolve) =>
+          viewModel.attachPropertyChange(() => {
+            if (viewModel.getProperty("/isRendered")) {
+              resolve();
+            }
+          })
+        );
+      },
+
+      onMetadataFailed(ODataModel) {
+        if (ODataModel.isMetadataLoadingFailed()) {
+          return Promise.resolve();
+        }
+
+        return new Promise((resolve) =>
+          ODataModel.attachMetadataFailed(() => resolve())
+        );
+      },
+
+      getNewBckndMsgs(event) {
+        const newMessages = event.getParameter("newMessages") || [];
+        const uniqueMessages = this.getArrayOfUnique(newMessages);
+
+        const duplicates = newMessages.filter(
+          (msg) => !uniqueMessages.includes(msg)
+        );
+
+        this.messageManager.removeMessages(duplicates);
+
+        return uniqueMessages;
+      },
+
+      getArrayOfUnique(messages) {
+        const messagesMap = messages.reduce((acc, curr) => {
+          const key = msg.message ? msg.message.toString() : "01";
+
+          acc[key] = msg;
+
+          return acc;
+        });
+
+        return Object.values(messagesMap);
+      },
+
+      getBindingName(input) {
+        return ["value", "selected", "selectedKey", "dateValue"].find((name) =>
+          input.getBinding(name)
+        );
+      },
+
+      showError(params) {
+        this.ODataErrorHandling.showError(params);
+      },
+
+      showConnectionError(event) {
+        const response = event.getParameter("response");
+        const { responseText, statusCode } = response;
+
+        if (responseText.includes("Timed Out") || statusCode === 504) {
+          this.showError({
+            error: this.resBundle.getText("timedOut"),
+          });
+        }
+      },
+
+      getValMsgTarget(input) {
+        const isSmartField =
+          input.getMetadata().getElementName() ===
+          "sap.ui.comp.smartfield.SmartField";
+
+        return isSmartField
+          ? `${input.getId()}-input/value`
+          : `${input.getId()}/${this.getBindingName(input)}`;
       },
     };
   }
