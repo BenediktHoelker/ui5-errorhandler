@@ -40,7 +40,6 @@ sap.ui.define(
       registerModels({ ODataModels, viewModel }) {
         ODataModels.forEach((model) => {
           Promise.all([
-            this.waitForAppToBeRendered(viewModel),
             this.onMetadataFailed(model),
           ]).then(() => {
             viewModel.setProperty("/busy", false);
@@ -125,20 +124,6 @@ sap.ui.define(
 
       getMessageManager() {
         return sap.ui.getCore().getMessageManager();
-      },
-
-      waitForAppToBeRendered(viewModel) {
-        if (viewModel.getProperty("/isRendered")) {
-          return Promise.resolve();
-        }
-
-        return new Promise((resolve) =>
-          viewModel.attachPropertyChange(() => {
-            if (viewModel.getProperty("/isRendered")) {
-              resolve();
-            }
-          })
-        );
       },
 
       onMetadataFailed(ODataModel) {

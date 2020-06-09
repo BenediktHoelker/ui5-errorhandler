@@ -35,6 +35,7 @@ sap.ui.define(
 
         MessageBox.error(text, {
           id: "serviceErrorMessageBox",
+          closeOnNavigation: !blocking,
           actions: [MessageBox.Action.CLOSE],
           onClose: () => {
             this.messageBoxIsOpen = false;
