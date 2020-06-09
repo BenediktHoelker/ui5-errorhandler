@@ -18,7 +18,7 @@ sap.ui.define(
     });
 
     return {
-      init({ viewModel, ODataModels }) {
+      init({ ODataModels }) {
         this.backendMessages = [];
         this.messageModel = this.getMessageModel();
         this.resBundle = new ResourceModel({
@@ -31,45 +31,50 @@ sap.ui.define(
         this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
         this.getMessageManager().registerMessageProcessor(this.msgProcessor);
 
-        this.registerModels({
+        return this.registerModels({
           ODataModels,
-          viewModel,
         });
       },
 
-      registerModels({ ODataModels, viewModel }) {
-        ODataModels.forEach((model) => {
-          Promise.all([
-            this.onMetadataFailed(model),
-          ]).then(() => {
-            viewModel.setProperty("/busy", false);
+      registerModels({ ODataModels }) {
+        ODataModels.forEach((model) => this.attachErrorHandlingForModel(model));
 
-            this.showError({
-              blocking: true,
-              error: this.resBundle.getText("metadataLoadingFailed"),
-            });
-          });
+        return Promise.all(
+          ODataModels.map(
+            (model) =>
+              new Promise((resolve, reject) => {
+                if (model.isMetadataLoadingFailed()) {
+                  reject();
+                }
 
-          model.attachMessageChange((oEvent) => {
-            this.backendMessages = this.getNewBckndMsgs(oEvent);
+                model.attachMetadataFailed(() => reject());
 
-            const error = this.backendMessages.find(
-              (message) => message.getType() === sap.ui.core.MessageType.Error
-            );
+                model.metadataLoaded().then(resolve);
+              })
+          )
+        ).catch(() => {
+          throw new Error(this.resBundle.getText("metadataLoadingFailed"));
+        });
+      },
 
-            if (error) {
-              this.showError({
-                error,
-              });
-            }
-          });
+      attachErrorHandlingForModel(model) {
+        model.attachMessageChange((event) => {
+          this.backendMessages = this.getNewBckndMsgs(event);
 
-          model.attachRequestFailed((event) => {
-            // falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
-            if (this.backendMessages.length === 0) {
-              this.showConnectionError(event);
-            }
-          });
+          const error = this.backendMessages.find(
+            (message) => message.getType() === sap.ui.core.MessageType.Error
+          );
+
+          if (error) {
+            this.showError(error);
+          }
+        });
+
+        model.attachRequestFailed((event) => {
+          // falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
+          if (this.backendMessages.length === 0) {
+            this.showConnectionError(event);
+          }
         });
       },
 
@@ -167,8 +172,8 @@ sap.ui.define(
         );
       },
 
-      showError(params) {
-        this.ODataErrorHandling.showError(params);
+      showError(error) {
+        this.ODataErrorHandling.showError(error);
       },
 
       showConnectionError(event) {
@@ -176,9 +181,7 @@ sap.ui.define(
         const { responseText, statusCode } = response;
 
         if (responseText.includes("Timed Out") || statusCode === 504) {
-          this.showError({
-            error: this.resBundle.getText("timedOut"),
-          });
+          this.showError(new Error(this.resBundle.getText("timedOut")));
         }
       },
 
