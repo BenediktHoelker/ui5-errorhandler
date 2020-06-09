@@ -118,10 +118,6 @@ sap.ui.define(
         return this.getMessageManager().getMessageModel();
       },
 
-      getMessageManager() {
-        return sap.ui.getCore().getMessageManager();
-      },
-
       getMessagePopover() {
         return this.messagePopover.getMessagePopover();
       },
@@ -129,6 +125,10 @@ sap.ui.define(
       /** =================================================
        *                       private
        *  ================================================= */
+
+      getMessageManager() {
+        return sap.ui.getCore().getMessageManager();
+      },
 
       waitForAppToBeRendered(viewModel) {
         if (viewModel.getProperty("/isRendered")) {
