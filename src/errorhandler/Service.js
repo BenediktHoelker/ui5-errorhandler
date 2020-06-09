@@ -55,13 +55,13 @@ sap.ui.define(
         return uniqueMessages;
       },
 
-      getUnique(messages) {
-        const messagesMap = {};
-
-        messages.forEach((msg) => {
+      getArrayOfUnique(messages) {
+        const messagesMap = messages.reduce((acc, curr) => {
           const key = msg.message ? msg.message.toString() : "01";
 
-          messagesMap[key] = msg;
+          acc[key] = msg;
+
+          return acc;
         });
 
         return Object.values(messagesMap);
@@ -92,9 +92,10 @@ sap.ui.define(
         const isSmartField =
           input.getMetadata().getElementName() ===
           "sap.ui.comp.smartfield.SmartField";
+
         return isSmartField
           ? `${input.getId()}-input/value`
-          : `${input.getId()}/${this.service.getBindingName(input)}`;
+          : `${input.getId()}/${this.getBindingName(input)}`;
       },
     });
   }
