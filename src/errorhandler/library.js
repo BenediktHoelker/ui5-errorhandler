@@ -28,6 +28,9 @@ sap.ui.define(
         this.messagePopover = new MessagePopover(this);
         this.ODataErrorHandling = new ODataErrorHandling(this);
 
+        this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
+        this.getMessageManager().registerMessageProcessor(this.msgProcessor);
+
         this.registerModels({
           ODataModels,
           viewModel,
@@ -84,6 +87,7 @@ sap.ui.define(
         text,
         input,
         message = text,
+        processor = this.msgProcessor,
         target = this.getValMsgTarget(input),
         additionalText,
         type = sap.ui.core.MessageType.Error,
@@ -100,6 +104,7 @@ sap.ui.define(
             additionalText,
             target,
             message,
+            processor,
             type,
             validation: true,
           })
