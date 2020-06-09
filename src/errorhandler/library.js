@@ -100,7 +100,6 @@ sap.ui.define(
             additionalText,
             target,
             message,
-            processor,
             type,
             validation: true,
           })
