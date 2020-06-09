@@ -44,7 +44,7 @@ sap.ui.define(
 
       getNewBckndMsgs(event) {
         const newMessages = event.getParameter("newMessages") || [];
-        const uniqueMessages = this.getUnique(newMessages);
+        const uniqueMessages = this.getArrayOfUnique(newMessages);
 
         const duplicates = newMessages.filter(
           (msg) => !uniqueMessages.includes(msg)
