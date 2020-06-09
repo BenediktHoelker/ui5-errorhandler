@@ -19,21 +19,14 @@ sap.ui.define(
 
     return {
       init({ viewModel, ODataModels }) {
+        this.backendMessages = [];
+        this.messageModel = this.getMessageModel();
         this.resBundle = new ResourceModel({
           bundleName: "errorhandler.i18n.i18n",
         }).getResourceBundle();
 
-        this.messagePopover = new MessagePopover({
-          resBundle: this.resBundle,
-          messageModel: this.getMessageModel(),
-        });
-
-        this.ODataErrorHandling = new ODataErrorHandling({
-          resBundle,
-          messageModel,
-        });
-
-        this.backendMessages = [];
+        this.messagePopover = new MessagePopover(this);
+        this.ODataErrorHandling = new ODataErrorHandling(this);
 
         this.registerModels({
           ODataModels,
@@ -162,19 +155,19 @@ sap.ui.define(
           (msg) => !uniqueMessages.includes(msg)
         );
 
-        this.messageManager.removeMessages(duplicates);
+        this.getMessageManager().removeMessages(duplicates);
 
         return uniqueMessages;
       },
 
       getArrayOfUnique(messages) {
-        const messagesMap = messages.reduce((acc, curr) => {
+        const messagesMap = messages.reduce((acc, msg) => {
           const key = msg.message ? msg.message.toString() : "01";
 
           acc[key] = msg;
 
           return acc;
-        });
+        }, {});
 
         return Object.values(messagesMap);
       },
