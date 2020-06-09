@@ -10,55 +10,41 @@ sap.ui.define(
         this.messageModel = messageModel;
       },
 
-      showError({
-        blocking = false,
-        error,
-        parsedError = this.parseError(error),
-      }) {
+      showError(error) {
+        const message = this.getMessage(error);
         if (
           !this.messageModel
             .getData()
-            .some((msg) => msg.message === parsedError.message)
+            .some((msg) => msg.message === message.message)
         ) {
-          sap.ui.getCore().getMessageManager().addMessages(parsedError);
+          sap.ui.getCore().getMessageManager().addMessages(message);
         }
 
-        if (!blocking || this.messageBoxIsOpen) return;
-
-        const text = !blocking
-          ? parsedError.message
-          : `${parsedError.message} ${this.resBundle.getText(
-              "navToLaunchpad"
-            )}`;
-
+        if (this.messageBoxIsOpen) return;
         this.messageBoxIsOpen = true;
 
-        MessageBox.error(text, {
+        MessageBox.error(message.message, {
           id: "serviceErrorMessageBox",
+          closeOnNavigation: false,
           actions: [MessageBox.Action.CLOSE],
           onClose: () => {
             this.messageBoxIsOpen = false;
-
-            if (blocking && sap.ushell) {
-              sap.ushell.Container.getService(
-                "CrossApplicationNavigation"
-              ).toExternal({
-                target: {
-                  semanticObject: "#",
-                },
-              });
-            }
           },
         });
       },
 
-      parseError(error) {
-        if (typeof error === "object") {
+      getMessage(error) {
+        if (
+          typeof error === "object" &&
+          error.getMetadata &&
+          error.getMetadata().getName &&
+          error.getMetadata().getName() === "sap.ui.core.message.Message"
+        ) {
           return error;
         }
 
         return new Message({
-          message: error,
+          message: error.message,
           type: sap.ui.core.MessageType.Error,
         });
       },

@@ -3,9 +3,9 @@ sap.ui.define(
     "sap/ui/core/message/Message",
     "./handling/MessagePopover",
     "sap/ui/model/resource/ResourceModel",
-    "./Service",
+    "./handling/ODataErrorHandling",
   ],
-  function (Message, MessagePopover, ResourceModel, Service) {
+  function (Message, MessagePopover, ResourceModel, ODataErrorHandling) {
     sap.ui.getCore().initLibrary({
       name: "errorhandler",
       version: "1.0.0",
@@ -18,77 +18,68 @@ sap.ui.define(
     });
 
     return {
-      init({
-        appViewModel,
-        viewModel = appViewModel,
-        oDataModels,
-        ODataModels = oDataModels,
-      }) {
+      init({ ODataModels }) {
+        this.backendMessages = [];
+        this.messageModel = this.getMessageModel();
         this.resBundle = new ResourceModel({
           bundleName: "errorhandler.i18n.i18n",
         }).getResourceBundle();
 
-        this.messagePopover = new MessagePopover({
-          resBundle: this.resBundle,
-          messageModel: this.getMessageModel(),
-        });
-
-        this.service = new Service({
-          resBundle: this.resBundle,
-          messageManager: this.getMessageManager(),
-          messageModel: this.getMessageModel(),
-        });
-
-        this.backendMessages = [];
+        this.messagePopover = new MessagePopover(this);
+        this.ODataErrorHandling = new ODataErrorHandling(this);
 
         this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
         this.getMessageManager().registerMessageProcessor(this.msgProcessor);
 
-        this.registerODataModel({
+        return this.registerModels({
           ODataModels,
-          viewModel,
         });
       },
 
-      registerODataModel({ ODataModels, viewModel }) {
-        ODataModels.forEach((model) => {
-          Promise.all([
-            this.service.waitForAppToBeRendered(viewModel),
-            this.service.onMetadataFailed(model),
-          ]).then(() => {
-            viewModel.setProperty("/busy", false);
+      registerModels({ ODataModels }) {
+        ODataModels.forEach((model) => this.attachErrorHandlingForModel(model));
 
-            this.service.showError({
-              blocking: true,
-              error: this.resBundle.getText("metadataLoadingFailed"),
-            });
-          });
+        return Promise.all(
+          ODataModels.map(
+            (model) =>
+              new Promise((resolve, reject) => {
+                if (model.isMetadataLoadingFailed()) {
+                  reject();
+                }
 
-          model.attachMessageChange((oEvent) => {
-            this.backendMessages = this.service.getNewBckndMsgs(oEvent);
+                model.attachMetadataFailed(() => reject());
 
-            const error = this.backendMessages.find(
-              (message) => message.getType() === sap.ui.core.MessageType.Error
-            );
+                model.metadataLoaded().then(resolve);
+              })
+          )
+        ).catch(() => {
+          throw new Error(this.resBundle.getText("metadataLoadingFailed"));
+        });
+      },
 
-            if (error) {
-              this.service.showError({
-                error,
-              });
-            }
-          });
+      attachErrorHandlingForModel(model) {
+        model.attachMessageChange((event) => {
+          this.backendMessages = this.getNewBckndMsgs(event);
 
-          model.attachRequestFailed((event) => {
-            // falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
-            if (this.backendMessages.length === 0) {
-              this.service.showConnectionError(event);
-            }
-          });
+          const error = this.backendMessages.find(
+            (message) => message.getType() === sap.ui.core.MessageType.Error
+          );
+
+          if (error) {
+            this.showError(error);
+          }
+        });
+
+        model.attachRequestFailed((event) => {
+          // falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
+          if (this.backendMessages.length === 0) {
+            this.showConnectionError(event);
+          }
         });
       },
 
       removeMessages({ target }) {
-        const msgModel = this.getMessageManager().getMessageModel();
+        const msgModel = this.getMessageModel();
         const messages = msgModel
           .getData()
           .filter((msg) => msg.target === target);
@@ -101,15 +92,15 @@ sap.ui.define(
         input,
         message = text,
         processor = this.msgProcessor,
-        target = this.service.getValMsgTarget(input),
+        target = this.getValMsgTarget(input),
         additionalText,
         type = sap.ui.core.MessageType.Error,
       }) {
         // Wenn das Binding auf das sich die Message bezieht keinen Typen besitzt, dann wird die Message bei Änderung des Binding-Wertes nicht wieder automatisch entfernt
-        const binding = input.getBinding(this.service.getBindingName(input));
+        const binding = input.getBinding(this.getBindingName(input));
+
         if (!binding.getType()) {
-          const stringType = new sap.ui.model.type.String();
-          binding.setType(stringType, "string");
+          binding.setType(new sap.ui.model.type.String(), "string");
         }
 
         this.getMessageManager().addMessages(
@@ -128,12 +119,80 @@ sap.ui.define(
         return this.getMessageManager().getMessageModel();
       },
 
+      getMessagePopover() {
+        return this.messagePopover.getMessagePopover();
+      },
+
+      /** =================================================
+       *                       private
+       *  ================================================= */
+
       getMessageManager() {
         return sap.ui.getCore().getMessageManager();
       },
 
-      getMessagePopover() {
-        return this.messagePopover.getMessagePopover();
+      onMetadataFailed(ODataModel) {
+        if (ODataModel.isMetadataLoadingFailed()) {
+          return Promise.resolve();
+        }
+
+        return new Promise((resolve) =>
+          ODataModel.attachMetadataFailed(() => resolve())
+        );
+      },
+
+      getNewBckndMsgs(event) {
+        const newMessages = event.getParameter("newMessages") || [];
+        const uniqueMessages = this.getArrayOfUnique(newMessages);
+
+        const duplicates = newMessages.filter(
+          (msg) => !uniqueMessages.includes(msg)
+        );
+
+        this.getMessageManager().removeMessages(duplicates);
+
+        return uniqueMessages;
+      },
+
+      getArrayOfUnique(messages) {
+        const messagesMap = messages.reduce((acc, msg) => {
+          const key = msg.message ? msg.message.toString() : "01";
+
+          acc[key] = msg;
+
+          return acc;
+        }, {});
+
+        return Object.values(messagesMap);
+      },
+
+      getBindingName(input) {
+        return ["value", "selected", "selectedKey", "dateValue"].find((name) =>
+          input.getBinding(name)
+        );
+      },
+
+      showError(error) {
+        this.ODataErrorHandling.showError(error);
+      },
+
+      showConnectionError(event) {
+        const response = event.getParameter("response");
+        const { responseText, statusCode } = response;
+
+        if (responseText.includes("Timed Out") || statusCode === 504) {
+          this.showError(new Error(this.resBundle.getText("timedOut")));
+        }
+      },
+
+      getValMsgTarget(input) {
+        const isSmartField =
+          input.getMetadata().getElementName() ===
+          "sap.ui.comp.smartfield.SmartField";
+
+        return isSmartField
+          ? `${input.getId()}-input/value`
+          : `${input.getId()}/${this.getBindingName(input)}`;
       },
     };
   }
