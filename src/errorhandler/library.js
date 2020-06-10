@@ -19,7 +19,6 @@ sap.ui.define(
 
     return {
       init({ ODataModels }) {
-        this.backendMessages = [];
         this.messageModel = this.getMessageModel();
         this.resBundle = new ResourceModel({
           bundleName: "errorhandler.i18n.i18n",
@@ -37,7 +36,9 @@ sap.ui.define(
       },
 
       registerModels({ ODataModels }) {
-        ODataModels.forEach((model) => this.attachErrorHandlingForModel(model));
+        ODataModels.forEach((model) =>
+          model.attachRequestFailed((event) => this.handleRequestFailed(event))
+        );
 
         return Promise.all(
           ODataModels.map(
@@ -48,7 +49,6 @@ sap.ui.define(
                 }
 
                 model.attachMetadataFailed(() => reject());
-
                 model.metadataLoaded().then(resolve);
               })
           )
@@ -57,37 +57,23 @@ sap.ui.define(
         });
       },
 
-      attachErrorHandlingForModel(model) {
-        model.attachMessageChange((event) => {
-          this.backendMessages = this.getNewBckndMsgs(event);
+      handleRequestFailed(event) {
+        const response = event.getParameter("response");
+        const { statusCode, responseText } = response;
 
-          const error = this.backendMessages.find(
-            (message) => message.getType() === sap.ui.core.MessageType.Error
-          );
+        if (responseText.includes("Timed Out") || statusCode === 504) {
+          this.showError(new Error(this.resBundle.getText("timedOut")));
+        }
 
-          if (error) {
-            this.showError(error);
-          }
-        });
-
-        model.attachRequestFailed((event) => {
-          const response = oEvent.getParameter("response");
-          const { statusCode, responseText } = response;
-
-          if (responseText.includes("Timed Out") || statusCode === 504) {
-            this.showError(new Error(this.resBundle.getText("timedOut")));
-          }
-
-          // An entity that was not found in the service is also throwing a 404 error in oData.
-          // We already cover this case with a notFound target so we skip it here.
-          // A request that cannot be sent to the server is a technical error that we have to handle though
-          if (
-            statusCode !== "404" ||
-            (statusCode === 404 && responseText.indexOf("Cannot POST") === 0)
-          ) {
-            this.showError(new Error(responseText));
-          }
-        });
+        // An entity that was not found in the service is also throwing a 404 error in oData.
+        // We already cover this case with a notFound target so we skip it here.
+        // A request that cannot be sent to the server is a technical error that we have to handle though
+        if (
+          statusCode !== "404" ||
+          (statusCode === 404 && responseText.indexOf("Cannot POST") === 0)
+        ) {
+          this.showError(new Error(responseText));
+        }
       },
 
       removeMessages({ target }) {
@@ -151,31 +137,6 @@ sap.ui.define(
         return new Promise((resolve) =>
           ODataModel.attachMetadataFailed(() => resolve())
         );
-      },
-
-      getNewBckndMsgs(event) {
-        const newMessages = event.getParameter("newMessages") || [];
-        const uniqueMessages = this.getArrayOfUnique(newMessages);
-
-        const duplicates = newMessages.filter(
-          (msg) => !uniqueMessages.includes(msg)
-        );
-
-        this.getMessageManager().removeMessages(duplicates);
-
-        return uniqueMessages;
-      },
-
-      getArrayOfUnique(messages) {
-        const messagesMap = messages.reduce((acc, msg) => {
-          const key = msg.message ? msg.message.toString() : "01";
-
-          acc[key] = msg;
-
-          return acc;
-        }, {});
-
-        return Object.values(messagesMap);
       },
 
       getBindingName(input) {
