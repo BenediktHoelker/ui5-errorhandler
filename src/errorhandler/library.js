@@ -71,9 +71,21 @@ sap.ui.define(
         });
 
         model.attachRequestFailed((event) => {
-          // falls der Request fehlschlägt, jedoch keine Message geliefert wurde trat ein Timeout bzw. Verbindungsabbruch auf
-          if (this.backendMessages.length === 0) {
-            this.showConnectionError(event);
+          const response = oEvent.getParameter("response");
+          const { statusCode, responseText } = response;
+
+          if (responseText.includes("Timed Out") || statusCode === 504) {
+            this.showError(new Error(this.resBundle.getText("timedOut")));
+          }
+
+          // An entity that was not found in the service is also throwing a 404 error in oData.
+          // We already cover this case with a notFound target so we skip it here.
+          // A request that cannot be sent to the server is a technical error that we have to handle though
+          if (
+            statusCode !== "404" ||
+            (statusCode === 404 && responseText.indexOf("Cannot POST") === 0)
+          ) {
+            this.showError(new Error(responseText));
           }
         });
       },
@@ -174,15 +186,6 @@ sap.ui.define(
 
       showError(error) {
         this.ODataErrorHandling.showError(error);
-      },
-
-      showConnectionError(event) {
-        const response = event.getParameter("response");
-        const { responseText, statusCode } = response;
-
-        if (responseText.includes("Timed Out") || statusCode === 504) {
-          this.showError(new Error(this.resBundle.getText("timedOut")));
-        }
       },
 
       getValMsgTarget(input) {

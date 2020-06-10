@@ -12,6 +12,7 @@ sap.ui.define(
 
       showError(error) {
         const message = this.getMessage(error);
+
         if (
           !this.messageModel
             .getData()
