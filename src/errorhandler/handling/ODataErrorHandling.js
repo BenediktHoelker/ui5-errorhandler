@@ -1,6 +1,11 @@
 sap.ui.define(
-  ["sap/ui/base/Object", "sap/ui/core/message/Message", "sap/m/MessageBox"],
-  function (UI5Object, Message, MessageBox) {
+  [
+    "sap/ui/base/Object",
+    "sap/base/Log",
+    "sap/ui/core/message/Message",
+    "sap/m/MessageBox",
+  ],
+  function (UI5Object, Log, Message, MessageBox) {
     return UI5Object.extend("errorhandler.validation.ServiceError", {
       // eslint-disable-next-line object-shorthand
       constructor: function ({ resBundle, messageModel } = {}, ...args) {
@@ -10,9 +15,8 @@ sap.ui.define(
         this.messageModel = messageModel;
       },
 
-      showError(error) {
-        const message = this.getMessage(error);
-
+      addError(error) {
+        const message = this.getError(error);
         if (
           !this.messageModel
             .getData()
@@ -20,11 +24,14 @@ sap.ui.define(
         ) {
           sap.ui.getCore().getMessageManager().addMessages(message);
         }
+      },
 
+      displayErrorMessageBox(errorText) {
         if (this.messageBoxIsOpen) return;
+
         this.messageBoxIsOpen = true;
 
-        MessageBox.error(message.message, {
+        MessageBox.error(errorText, {
           id: "serviceErrorMessageBox",
           closeOnNavigation: false,
           actions: [MessageBox.Action.CLOSE],
@@ -34,7 +41,12 @@ sap.ui.define(
         });
       },
 
-      getMessage(error) {
+      showError(error) {
+        this.addError(error);
+        this.displayErrorMessageBox(error.message);
+      },
+
+      getError(error) {
         if (
           typeof error === "object" &&
           error.getMetadata &&
@@ -48,6 +60,26 @@ sap.ui.define(
           message: error.message,
           type: sap.ui.core.MessageType.Error,
         });
+      },
+
+      parseError(errorText) {
+        let error;
+        try {
+          error = JSON.parse(errorText);
+        } catch (err) {
+          Log.error(err);
+          this.resBundle.getText("errorMessageCouldNotBeParsed");
+        }
+
+        // Safely accessing deeply nested properties:
+        // https://medium.com/javascript-inside/safely-accessing-deeply-nested-values-in-javascript-99bf72a0855a
+        const get = (p, o) =>
+          p.reduce((xs, x) => (xs && xs[x] ? xs[x] : null), o);
+
+        return (
+          get(["error", "message", "value"], error) ||
+          this.resBundle.getText("message.undefined")
+        );
       },
     });
   }

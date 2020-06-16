@@ -72,7 +72,8 @@ sap.ui.define(
           statusCode !== "404" ||
           (statusCode === 404 && responseText.indexOf("Cannot POST") === 0)
         ) {
-          this.showError(new Error(responseText));
+          const errorText = this.ODataErrorHandling.parseError(responseText);
+          this.ODataErrorHandling.displayErrorMessageBox(errorText);
         }
       },
 
