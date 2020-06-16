@@ -15,23 +15,26 @@ sap.ui.define(
         this.messageModel = messageModel;
       },
 
-      addError(error) {
-        const message = this.getError(error);
+      showError(error) {
+        const ui5Message = this.getUI5MessageFrom(error);
+
         if (
           !this.messageModel
             .getData()
-            .some((msg) => msg.message === message.message)
+            .some((msg) => msg.message === ui5Message.message)
         ) {
-          sap.ui.getCore().getMessageManager().addMessages(message);
+          sap.ui.getCore().getMessageManager().addMessages(ui5Message);
         }
+
+        this.displayErrorMessageBox(error);
       },
 
-      displayErrorMessageBox(errorText) {
+      displayErrorMessageBox(error) {
         if (this.messageBoxIsOpen) return;
 
         this.messageBoxIsOpen = true;
 
-        MessageBox.error(errorText, {
+        MessageBox.error(this.extractErrorTextFrom(error), {
           id: "serviceErrorMessageBox",
           closeOnNavigation: false,
           actions: [MessageBox.Action.CLOSE],
@@ -41,12 +44,7 @@ sap.ui.define(
         });
       },
 
-      showError(error) {
-        this.addError(error);
-        this.displayErrorMessageBox(error.message);
-      },
-
-      getError(error) {
+      getUI5MessageFrom(error) {
         if (
           typeof error === "object" &&
           error.getMetadata &&
@@ -62,13 +60,16 @@ sap.ui.define(
         });
       },
 
-      parseError(errorText) {
-        let error;
+      extractErrorTextFrom(error) {
+        if (error.message) return error.message;
+
+        let parsedError;
+
         try {
-          error = JSON.parse(errorText);
+          parsedError = JSON.parse(error.responseText);
         } catch (err) {
           Log.error(err);
-          this.resBundle.getText("errorMessageCouldNotBeParsed");
+          return this.resBundle.getText("errorMessageCouldNotBeParsed");
         }
 
         // Safely accessing deeply nested properties:
@@ -77,7 +78,7 @@ sap.ui.define(
           p.reduce((xs, x) => (xs && xs[x] ? xs[x] : null), o);
 
         return (
-          get(["error", "message", "value"], error) ||
+          get(["error", "message", "value"], parsedError) ||
           this.resBundle.getText("errorMessageCouldNotBeRead")
         );
       },

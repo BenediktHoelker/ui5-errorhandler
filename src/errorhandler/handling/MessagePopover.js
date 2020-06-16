@@ -107,7 +107,7 @@ sap.ui.define(
               description: message.description,
               additionalText: message.additionalText,
               target: message.target,
-              processor: message.processor.getMetadata().getName(),
+              // processor: message.processor.getMetadata().getName(),
               persistent: message.persistent,
               technical: message.technical,
               validation: message.validation,

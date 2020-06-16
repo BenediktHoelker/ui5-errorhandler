@@ -62,19 +62,26 @@ sap.ui.define(
         const { statusCode, responseText } = response;
 
         if (responseText.includes("Timed Out") || statusCode === 504) {
-          this.showError(new Error(this.resBundle.getText("timedOut")));
+          return this.showError(new Error(this.resBundle.getText("timedOut")));
         }
 
-        // An entity that was not found in the service is also throwing a 404 error in oData.
+        if (statusCode === 500) {
+          return this.showError(
+            new Error(this.resBundle.getText("internalServerError"))
+          );
+        }
+
+        // An entity that was not found in the service is also throwing a 404 error in OData.
         // We already cover this case with a notFound target so we skip it here.
         // A request that cannot be sent to the server is a technical error that we have to handle though
         if (
           statusCode !== "404" ||
           (statusCode === 404 && responseText.indexOf("Cannot POST") === 0)
         ) {
-          const errorText = this.ODataErrorHandling.parseError(responseText);
-          this.ODataErrorHandling.displayErrorMessageBox(errorText);
+          return this.ODataErrorHandling.displayErrorMessageBox(responseText);
         }
+
+        return "";
       },
 
       removeMessages({ target }) {
