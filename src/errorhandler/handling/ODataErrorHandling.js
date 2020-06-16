@@ -78,7 +78,7 @@ sap.ui.define(
 
         return (
           get(["error", "message", "value"], error) ||
-          this.resBundle.getText("message.undefined")
+          this.resBundle.getText("errorMessageCouldNotBeRead")
         );
       },
     });
