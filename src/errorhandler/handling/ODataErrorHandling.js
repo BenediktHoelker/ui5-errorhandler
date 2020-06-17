@@ -66,7 +66,7 @@ sap.ui.define(
         let parsedError;
 
         try {
-          parsedError = JSON.parse(error.responseText);
+          parsedError = JSON.parse(error);
         } catch (err) {
           Log.error(err);
           return this.resBundle.getText("errorMessageCouldNotBeParsed");
