@@ -84,6 +84,10 @@ sap.ui.define(
         return "";
       },
 
+      removeAllMessages() {
+        sap.ui.getCore().getMessageManager().removeAllMessages();
+      },
+
       removeMessages({ target }) {
         const msgModel = this.getMessageModel();
         const messages = msgModel
