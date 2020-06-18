@@ -59,7 +59,7 @@ sap.ui.define(
 
       handleRequestFailed(event) {
         const response = event.getParameter("response");
-        const { statusCode, responseText } = response;
+        const { statusCode = 400, responseText = "" } = response;
 
         if (responseText.includes("Timed Out") || statusCode === 504) {
           return this.showError(new Error(this.resBundle.getText("timedOut")));

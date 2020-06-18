@@ -60,7 +60,7 @@ sap.ui.define(
         });
       },
 
-      extractErrorTextFrom(error) {
+      extractErrorTextFrom(error = "{}") {
         if (error.message) return error.message;
 
         let parsedError;
