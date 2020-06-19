@@ -61,11 +61,14 @@ sap.ui.define(
         const response = event.getParameter("response");
         const { statusCode = 400, responseText = "" } = response;
 
-        if (responseText.includes("Timed Out") || statusCode === 504) {
+        // => Explicitly use == because we don't know the format of the statusCode
+        // eslint-disable-next-line eqeqeq
+        if (responseText.includes("Timed Out") || statusCode == 504) {
           return this.showError(new Error(this.resBundle.getText("timedOut")));
         }
 
-        if (statusCode === 500) {
+        // eslint-disable-next-line eqeqeq
+        if (statusCode == 500) {
           return this.showError(
             new Error(this.resBundle.getText("internalServerError"))
           );
