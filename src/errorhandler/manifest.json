@@ -1,7 +1,7 @@
 {
 	"version": "1.12.0",
 	"sap.app": {
-		"id": "iot-ui5-errorhandler",
+		"id": "errorhandler",
 		"type": "library",
 		"applicationVersion": {
 			"version": "1.0.0"
