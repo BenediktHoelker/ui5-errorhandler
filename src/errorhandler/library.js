@@ -68,11 +68,11 @@ sap.ui.define(
         }
 
         // eslint-disable-next-line eqeqeq
-        if (statusCode == 500) {
-          return this.showError(
-            new Error(this.resBundle.getText("internalServerError"))
-          );
-        }
+        // if (statusCode == 500) {
+        //   return this.showError(
+        //     new Error(this.resBundle.getText("internalServerError"))
+        //   );
+        // }
 
         // An entity that was not found in the service is also throwing a 404 error in OData.
         // We already cover this case with a notFound target so we skip it here.
