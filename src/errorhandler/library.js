@@ -30,6 +30,8 @@ sap.ui.define(
         this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
         this.getMessageManager().registerMessageProcessor(this.msgProcessor);
 
+        this.removeAllMessages();
+
         return this.registerModels({
           ODataModels,
         });
