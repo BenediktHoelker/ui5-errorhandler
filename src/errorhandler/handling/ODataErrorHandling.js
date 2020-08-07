@@ -60,17 +60,30 @@ sap.ui.define(
         });
       },
 
-      extractErrorTextFrom(error = "{}") {
-        if (error.message) return error.message;
-
-        let parsedError;
+      extractErrorTextFrom(error) {
+        if (error && error.message) return error.message;
 
         try {
-          parsedError = JSON.parse(error);
-        } catch (err) {
-          Log.error(err);
-          return this.resBundle.getText("errorMessageCouldNotBeParsed");
+          return this.extractErrorMsgFromJSON(error);
+        } catch (errJSON) {
+          try {
+            return this.extractErrorMsgFromXML(error);
+          } catch (errXML) {
+            return this.resBundle.getText("errorMessageCouldNotBeParsed");
+          }
         }
+      },
+
+      extractErrorMsgFromXML(error) {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(error, "text/xml");
+        return xmlDoc
+          .getElementsByTagName("error")[0]
+          .getElementsByTagName("message")[0].childNodes[0].wholeText;
+      },
+
+      extractErrorMsgFromJSON(error) {
+        const parsedError = JSON.parse(error);
 
         // Safely accessing deeply nested properties:
         // https://medium.com/javascript-inside/safely-accessing-deeply-nested-values-in-javascript-99bf72a0855a
