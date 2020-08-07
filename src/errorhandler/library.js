@@ -1,11 +1,12 @@
 sap.ui.define(
   [
     "sap/ui/core/message/Message",
-    "./handling/MessagePopover",
+    "./MessagePopover",
     "sap/ui/model/resource/ResourceModel",
-    "./handling/ODataErrorHandling",
+    "./ErrorParser",
+    "sap/m/MessageBox",
   ],
-  function (Message, MessagePopover, ResourceModel, ODataErrorHandling) {
+  function (Message, MessagePopover, ResourceModel, ErrorParser, MessageBox) {
     sap.ui.getCore().initLibrary({
       name: "errorhandler",
       version: "1.0.0",
@@ -25,7 +26,7 @@ sap.ui.define(
         }).getResourceBundle();
 
         this.messagePopover = new MessagePopover(this);
-        this.ODataErrorHandling = new ODataErrorHandling(this);
+        this.ErrorParser = new ErrorParser(this);
 
         this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
         this.getMessageManager().registerMessageProcessor(this.msgProcessor);
@@ -69,13 +70,6 @@ sap.ui.define(
           return this.showError(new Error(this.resBundle.getText("timedOut")));
         }
 
-        // eslint-disable-next-line eqeqeq
-        // if (statusCode == 500) {
-        //   return this.showError(
-        //     new Error(this.resBundle.getText("internalServerError"))
-        //   );
-        // }
-
         // An entity that was not found in the service is also throwing a 404 error in OData.
         // We already cover this case with a notFound target so we skip it here.
         // A request that cannot be sent to the server is a technical error that we have to handle though
@@ -83,7 +77,7 @@ sap.ui.define(
           statusCode !== "404" ||
           (statusCode === 404 && responseText.indexOf("Cannot POST") === 0)
         ) {
-          return this.ODataErrorHandling.displayErrorMessageBox(responseText);
+          return this.showError(responseText);
         }
 
         return "";
@@ -163,7 +157,29 @@ sap.ui.define(
       },
 
       showError(error) {
-        this.ODataErrorHandling.showError(error);
+        const ui5Message = this.getUI5MessageFrom(error);
+        const msgText = ui5Message.getMessage();
+
+        if (
+          !this.messageModel
+            .getData()
+            .some((msg) => msgText === msg.getMessage())
+        ) {
+          sap.ui.getCore().getMessageManager().addMessages(ui5Message);
+        }
+
+        if (this.messageBoxIsOpen) return;
+
+        this.messageBoxIsOpen = true;
+
+        MessageBox.error(msgText, {
+          id: "serviceErrorMessageBox",
+          closeOnNavigation: false,
+          actions: [MessageBox.Action.CLOSE],
+          onClose: () => {
+            this.messageBoxIsOpen = false;
+          },
+        });
       },
 
       getValMsgTarget(input) {
@@ -174,6 +190,22 @@ sap.ui.define(
         return isSmartField
           ? `${input.getId()}-input/value`
           : `${input.getId()}/${this.getBindingName(input)}`;
+      },
+
+      getUI5MessageFrom(error) {
+        if (
+          typeof error === "object" &&
+          error.getMetadata &&
+          error.getMetadata().getName &&
+          error.getMetadata().getName() === "sap.ui.core.message.Message"
+        ) {
+          return error;
+        }
+
+        return new Message({
+          message: this.ErrorParser.extractErrorTextFrom(error),
+          type: sap.ui.core.MessageType.Error,
+        });
       },
     };
   }
