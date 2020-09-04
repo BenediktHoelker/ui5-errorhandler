@@ -167,9 +167,10 @@ sap.ui.define(
       },
 
       getValMsgTarget(input) {
-        const isSmartField =
-          input.getMetadata().getElementName() ===
-          "sap.ui.comp.smartfield.SmartField";
+        const isSmartField = input
+          .getMetadata()
+          .getElementName()
+          .includes("SmartField");
 
         return isSmartField
           ? `${input.getId()}-input/value`
