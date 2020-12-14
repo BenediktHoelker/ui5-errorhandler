@@ -71,7 +71,7 @@ sap.ui.define(
         if (!sap.ushell || !sap.ushell.Container) return "";
 
         const appComponent = this.getAppComponent();
-        const user = appComponent.getModel("user").getProperty("/user");
+        const user = appComponent.getModel("user")?.getProperty("/user");
 
         // falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
         // ansonsten wird der User der Shell verwendet
