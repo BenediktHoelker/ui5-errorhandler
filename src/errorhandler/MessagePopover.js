@@ -52,11 +52,11 @@ sap.ui.define(
         );
         const body = this.getUserInfos() + this.getMsgInfos();
 
-        SAPMLibrary.URLHelper.triggerEmail({
-          address: bundle.getText("mailAddress"),
+        SAPMLibrary.URLHelper.triggerEmail(
+          bundle.getText("mailAddress"),
           subject,
-          body,
-        });
+          body
+        );
       },
 
       getAppComponent() {
@@ -95,9 +95,12 @@ sap.ui.define(
           this.messageModel.getData().map((message) => {
             // anstatt dem Timestamp soll Datum und Uhrzeit in leslicher Form ausgegeben werden
             const time = new Date(message.date);
+            const { controlIds } = message;
 
             return {
               ...message,
+              controlIds: { ...controlIds },
+              processor: {},
               date: time.toLocaleDateString(),
               time: time.toLocaleTimeString(),
             };
