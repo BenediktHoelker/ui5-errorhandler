@@ -100,6 +100,7 @@ sap.ui.define(
             return {
               ...message,
               controlIds: { ...controlIds },
+              // der MessageProcessor soll nicht mit ausgegeben werden in der Mail
               processor: {},
               date: time.toLocaleDateString(),
               time: time.toLocaleTimeString(),
