@@ -1,6 +1,6 @@
 {
 	"name": "iot-ui5-errorhandler",
-	"version": "1.5.2",
+	"version": "1.5.3",
 	"private": false,
 	"devDependencies": {
 		"@ui5/cli": "2.6.6",
