@@ -6,7 +6,7 @@ sap.ui.define(
     "./ErrorParser",
     "sap/m/MessageBox",
   ],
-  function (Message, MessagePopover, ResourceModel, ErrorParser, MessageBox) {
+  (Message, MessagePopover, ResourceModel, ErrorParser, MessageBox) => {
     sap.ui.getCore().initLibrary({
       name: "errorhandler",
       version: "1.0.0",
@@ -189,7 +189,7 @@ sap.ui.define(
           .includes("SmartField");
 
         return isSmartField
-          ? `${input.getId()}-input/value`
+          ? `${input.getInnerControls()[0].getId()}/value`
           : `${input.getId()}/${this.getBindingName(input)}`;
       },
 
