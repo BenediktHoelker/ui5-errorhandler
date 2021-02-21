@@ -19,7 +19,7 @@ sap.ui.define(
     });
 
     return {
-      init({ ODataModels }) {
+      init({ oDataModels, ODataModels = oDataModels }) {
         this.messageModel = this.getMessageModel();
         this.resBundle = new ResourceModel({
           bundleName: "errorhandler.i18n.i18n",
@@ -38,7 +38,7 @@ sap.ui.define(
         });
       },
 
-      registerModels({ ODataModels }) {
+      registerModels({ oDataModels, ODataModels = oDataModels }) {
         ODataModels.forEach((model) =>
           model.attachRequestFailed((event) => this.handleRequestFailed(event))
         );
