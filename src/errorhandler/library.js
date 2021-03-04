@@ -168,16 +168,16 @@ sap.ui.define(
           sap.ui.getCore().getMessageManager().addMessages(ui5Message);
         }
 
-        if (this.messageBoxIsOpen) return;
+        if (this._messageBoxIsOpen) return;
 
-        this.messageBoxIsOpen = true;
+        this._messageBoxIsOpen = true;
 
         MessageBox.error(msgText, {
           id: "serviceErrorMessageBox",
           closeOnNavigation: false,
           actions: [MessageBox.Action.CLOSE],
           onClose: () => {
-            this.messageBoxIsOpen = false;
+            this._messageBoxIsOpen = false;
           },
         });
       },
