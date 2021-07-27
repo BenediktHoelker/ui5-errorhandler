@@ -5,38 +5,50 @@ sap.ui.define(
     "sap/m/MessagePopover",
     "sap/m/library",
   ],
-  function (UI5Object, Button, MessagePopover, SAPMLibrary) {
-    return UI5Object.extend("errorhandler.MessagePopover", {
-      // eslint-disable-next-line object-shorthand
-      constructor: function ({ resBundle, messageModel } = {}, ...args) {
-        UI5Object.apply(this, args);
+  (UI5Object, Button, MessagePopover, SAPMLibrary) =>
+    MessagePopover.extend("errorhandler.MessagePopover", {
+      metadata: {
+        library: "errorhandler",
+        properties: {},
+        events: {},
+      },
+      renderer: "sap.m.MessagePopoverRenderer",
 
-        this.resBundle = resBundle;
-        this.messageModel = messageModel;
+      init(...args) {
+        MessagePopover.prototype.init.apply(this, ...args);
+        console.log(args);
       },
 
-      getMessagePopover() {
+      // eslint-disable-next-line object-shorthand
+      // constructor: function ({ resBundle, messageModel } = {}, ...args) {
+      //   MessagePopover.apply(this, args);
+
+      //   this.resBundle = resBundle;
+      //   this.messageModel = messageModel;
+      // },
+
+      getMessagePopover({ modelName }) {
         if (!this.messagePopover) {
-          this.messagePopover = this.initMessagePopover();
+          this.messagePopover = this.initMessagePopover({ modelName });
         }
         return this.messagePopover;
       },
 
-      initMessagePopover() {
+      initMessagePopover({ modelName = "message" }) {
         const messagePopover = new MessagePopover({
           headerButton: new Button({
             text: this.resBundle.getText("sendMail"),
             press: () => this.triggerEmail(),
           }),
           items: {
-            path: "message>/",
+            path: `${modelName}>/`,
             template: sap.ui.xmlfragment(
               "errorhandler.fragments.MessageItem",
               this
             ),
           },
         });
-        messagePopover.setModel(this.messageModel, "message");
+        messagePopover.setModel(this.messageModel, modelName);
         return messagePopover;
       },
 
@@ -104,6 +116,5 @@ sap.ui.define(
           })
         );
       },
-    });
-  }
+    })
 );
