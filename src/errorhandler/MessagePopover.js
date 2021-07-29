@@ -16,40 +16,6 @@ sap.ui.define(
 
       init(...args) {
         MessagePopover.prototype.init.apply(this, ...args);
-        console.log(args);
-      },
-
-      // eslint-disable-next-line object-shorthand
-      // constructor: function ({ resBundle, messageModel } = {}, ...args) {
-      //   MessagePopover.apply(this, args);
-
-      //   this.resBundle = resBundle;
-      //   this.messageModel = messageModel;
-      // },
-
-      getMessagePopover({ modelName }) {
-        if (!this.messagePopover) {
-          this.messagePopover = this.initMessagePopover({ modelName });
-        }
-        return this.messagePopover;
-      },
-
-      initMessagePopover({ modelName = "message" }) {
-        const messagePopover = new MessagePopover({
-          headerButton: new Button({
-            text: this.resBundle.getText("sendMail"),
-            press: () => this.triggerEmail(),
-          }),
-          items: {
-            path: `${modelName}>/`,
-            template: sap.ui.xmlfragment(
-              "errorhandler.fragments.MessageItem",
-              this
-            ),
-          },
-        });
-        messagePopover.setModel(this.messageModel, modelName);
-        return messagePopover;
       },
 
       triggerEmail() {
