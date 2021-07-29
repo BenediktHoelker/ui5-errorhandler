@@ -22,28 +22,25 @@ sap.ui.define(
       return this.registerODataModels(ODataModels);
     },
 
-    async registerODataModels(models) {
+    registerODataModels(models) {
       models.forEach((model) =>
         model.attachRequestFailed((event) => this.handleRequestFailed(event))
       );
+      return Promise.all(
+        models.map(
+          (model) =>
+            new Promise((resolve, reject) => {
+              if (model.isMetadataLoadingFailed()) {
+                reject();
+              }
 
-      try {
-        return Promise.all(
-          models.map(
-            (model) =>
-              new Promise((resolve, reject) => {
-                if (model.isMetadataLoadingFailed()) {
-                  reject();
-                }
-
-                model.attachMetadataFailed(reject);
-                model.metadataLoaded().then(resolve);
-              })
-          )
-        );
-      } catch (e) {
+              model.attachMetadataFailed(() => reject());
+              model.metadataLoaded().then(resolve);
+            })
+        )
+      ).catch(() => {
         throw new Error(this.resBundle.getText("metadataLoadingFailed"));
-      }
+      });
     },
 
     handleRequestFailed(event) {
