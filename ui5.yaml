@@ -1,4 +1,4 @@
-specVersion: "2.1"
+specVersion: "2.3"
 metadata:
   name: errorhandler
 framework:
@@ -8,19 +8,7 @@ framework:
     - name: sap.ui.core
 type: library
 builder:
-  customTasks:
-    - name: ui5-task-nwabap-deployer
-      afterTask: uglify
-      configuration:
-        resources:
-          path: "dist"
-          pattern: "**/*.*"
-        connection:
-          useStrictSSL: true
-          server: http://sapfet01.frankonia.net:44300
-        ui5:
-          language: DE
-          package: Z_FIORI_REUSE
-          bspContainer: ZERRORHANDLER
-          bspContainerText: Error Handler
-          calculateApplicationIndex: true
+  resources:
+    excludes:
+      - "**/localService/**"
+      - "**/test/**"
