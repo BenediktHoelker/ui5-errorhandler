@@ -40,5 +40,9 @@
 	"sap.fiori": {
 		"registrationIds": [],
 		"archeType": "reusecomponent"
+    },
+    "sap.cloud": {
+		"public": true,
+		"service": "vonovia.errorhandler"
 	}
 }
