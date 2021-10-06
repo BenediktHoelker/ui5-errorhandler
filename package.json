@@ -1,41 +1,35 @@
 {
-	"name": "@iot/ui5-errorhandler",
-	"description": "Handle UI5- and OData-messages and display them in MessagePopover/-Box",
-	"version": "2.0.2",
-	"private": false,
-	"devDependencies": {
-		"@sap/ux-ui5-tooling": "1",
-		"@ui5/cli": "^2.11.1",
-		"@ui5/fs": "^2.0.6",
-		"@ui5/logger": "^2.0.1",
-		"ui5-task-zipper": "^0.4.4",
-		"vsts-npm-auth": "^0.41.0"
-	},
-	"ui5": {
-		"dependencies": [
-			"@sap/ux-ui5-tooling",
-			"ui5-task-zipper"
-		]
-	},
-	"keywords": [
-		"ui5",
-		"openui5",
-		"sapui5"
-	],
-	"scripts": {
-		"start": "fiori run --open 'index.html'",
-		"start-local": "fiori run --config ./ui5-local.yaml --open 'index.html'",
-		"start-noflp": "fiori run --open 'index.html'",
-		"build": "ui5 build -a --clean-dest --include-task=generateManifestBundle generateCachebusterInfo",
-		"deploy": "fiori verify",
-		"deploy-config": "fiori add deploy-config",
-		"build:mta": "mbt build --mtar archive",
-		"build:cf": "ui5 build preload --clean-dest --config ui5-deploy.yaml --include-task=generateManifestBundle generateCachebusterInfo",
-		"deploy:cf": "cf deploy mta_archives/archive.mtar",
-		"buildAndDeploy:cf": "npm run build:mta && npm run deploy:cf",
-		"unit-tests": "fiori run --open test/unit/unitTests.qunit.html",
-		"int-tests": "fiori run --open test/integration/opaTests.qunit.html",
-		"refreshAzDevToken": "vsts-npm-auth -config .npmrc"
-	},
-	"license": "UNLICENSED"
+    "name": "@iot/ui5-errorhandler",
+    "description": "Handle UI5- and OData-messages and display them in MessagePopover/-Box",
+    "version": "2.1.0",
+    "private": false,
+    "devDependencies": {
+        "@ui5/cli": "2.6.6",
+        "eslint": "^7.15.0",
+        "eslint-config-airbnb": "^18.2.1",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-config-prettier": "^7.0.0",
+        "eslint-plugin-import": "^2.22.1",
+        "eslint-plugin-jsx-a11y": "^6.4.1",
+        "eslint-plugin-prettier": "^3.3.0",
+        "eslint-plugin-react": "^7.21.5",
+        "ui5-task-nwabap-deployer": "^1.0.15",
+        "prettier": "^2.2.1",
+        "rimraf": "^3.0.2"
+    },
+    "scripts": {
+        "clean": "rimraf dist",
+        "lint": "eslint src",
+        "build": "rimraf dist && ui5 build --include-task=generateManifestBundle generateCachebusterInfo ",
+        "build-for-deploy": "npm run build && npm run flatten && npm run clean-after-flatten",
+        "flatten": "cp -r dist/resources/errorhandler/* dist && cp dist/resources/errorhandler/.library dist && cp dist/resources/.Ui5RepositoryTextFiles dist",
+        "clean-after-flatten": "rimraf dist/resources dist/test-resources",
+        "refreshAzDevToken": "vsts-npm-auth -config .npmrc"
+    },
+    "license": "UNLICENSED",
+    "ui5": {
+        "dependencies": [
+            "ui5-task-nwabap-deployer"
+        ]
+    }
 }
