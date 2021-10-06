@@ -1,0 +1,82 @@
+_schema-version: "3.2"
+ID: vonovia-errorhandler
+description: Access user info
+version: 0.0.1
+modules:
+  - name: vonovia-errorhandler-dest-content
+    type: com.sap.application.content
+    requires:
+      - name: vonovia-errorhandler-dest-srv
+        parameters:
+          content-target: true
+      - name: vonovia-errorhandler-repo-host
+        parameters:
+          service-key:
+            name: vonovia-errorhandler-repo-host-key
+      - name: vonovia-errorhandler-uaa
+        parameters:
+          service-key:
+            name: vonovia-errorhandler-uaa-key
+    parameters:
+      content:
+        subaccount:
+          destinations:
+            - Name: vonovia-errorhandler_repo_host
+              ServiceInstanceName: vonovia-errorhandler-html5-srv
+              ServiceKeyName: vonovia-errorhandler-repo-host-key
+              sap.cloud.service: vonovia.errorhandler
+            - Authentication: OAuth2UserTokenExchange
+              Name: vonovia-errorhandler_uaa
+              ServiceInstanceName: vonovia-errorhandler-xsuaa-srv
+              ServiceKeyName: vonovia-errorhandler-uaa-key
+              sap.cloud.service: vonovia.errorhandler
+          existing_destinations_policy: ignore
+    build-parameters:
+      no-source: true
+  - name: vonovia-errorhandler-app-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: vonovia-errorhandler-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - artifacts:
+            - vonoviaerrorhandler.zip
+          name: vonoviaerrorhandler
+          target-path: resources/
+  - name: vonoviaerrorhandler
+    type: html5
+    path: .
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build:cf
+      supported-platforms: []
+resources:
+  - name: vonovia-errorhandler-dest-srv
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-name: vonovia-errorhandler-dest-srv
+      service-plan: lite
+  - name: vonovia-errorhandler-uaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      path: ./xs-security.json
+      service: xsuaa
+      service-name: vonovia-errorhandler-xsuaa-srv
+      service-plan: application
+  - name: vonovia-errorhandler-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-name: vonovia-errorhandler-html5-srv
+      service-plan: app-host
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
