@@ -7,7 +7,7 @@ sap.ui.define(
   ],
   (ErrorParser, Message, MessageBox) => ({
     cover(ODataModels) {
-      const msgManager = sap.ui.getCore().getMessageManager();
+      const msgManager = this.getMessageManager();
 
       this.resBundle = new sap.ui.model.resource.ResourceModel({
         bundleName: "errorhandler.i18n.i18n",
@@ -66,23 +66,28 @@ sap.ui.define(
       return "";
     },
 
+    getMessageModel() {
+      return this.getMessageManager().getMessageModel();
+    },
+
     /** =================================================
      *                       private
      *  ================================================= */
+
+    getMessageManager() {
+      return sap.ui.getCore().getMessageManager();
+    },
 
     showError(error) {
       const ui5Message = this.getUI5MessageFrom(error);
       const msgText = ui5Message.getMessage();
 
       if (
-        !sap.ui
-          .getCore()
-          .getMessageManager()
-          .getMessageModel()
+        !this.getMessageModel()
           .getData()
           .some((msg) => msgText === msg.getMessage())
       ) {
-        sap.ui.getCore().getMessageManager().addMessages(ui5Message);
+        this.getMessageManager().addMessages(ui5Message);
       }
 
       if (this._messageBoxIsOpen) return;
