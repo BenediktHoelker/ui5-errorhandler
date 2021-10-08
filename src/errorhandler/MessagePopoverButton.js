@@ -1,6 +1,11 @@
 sap.ui.define(
-  ["sap/m/Button", "./MessagePopover"],
-  (Button, MessagePopover) => {
+  [
+    "sap/m/Button",
+    "./ErrorHandler",
+    "sap/ui/core/Fragment",
+    "./MessagePopover",
+  ],
+  (Button, ErrorHandler, Fragment, MessagePopover) => {
     const MessagePopoverButton = Button.extend(
       "errorhandler.MessagePopoverButton",
       {
@@ -22,7 +27,7 @@ sap.ui.define(
           properties: {
             icon: {
               type: "string",
-              defaultValue: "sap-icon://bar-code",
+              defaultValue: "sap-icon://message-popup",
             },
             text: {
               type: "string",
@@ -34,6 +39,12 @@ sap.ui.define(
         renderer: "sap.m.ButtonRenderer",
 
         init(...args) {
+          const messageModel = ErrorHandler.getMessageModel();
+          this.setModel(messageModel, "message");
+
+          this._defaultText = this.getText();
+          this._defaultType = this.getType();
+
           // eslint-disable-next-line prefer-rest-params
           Button.prototype.init.apply(this, ...args);
 
@@ -44,11 +55,48 @@ sap.ui.define(
       }
     );
 
-    MessagePopoverButton.prototype.onBeforeRendering = function () {
+    MessagePopoverButton.prototype.onBeforeRendering = async function () {
+      if (!this.getBindingInfo("items")) {
+        const messageItem = await Fragment.load({
+          id: this.getId(),
+          name: `errorhandler.fragments.MessageItem`,
+          controller: this,
+        });
+
+        this.bindAggregation("items", {
+          path: "/",
+          model: "message",
+          template: messageItem,
+        });
+      }
+
       this.getAggregation("_popover").bindAggregation(
         "items",
         this.getBindingInfo("items")
       );
+
+      if (
+        !this.getBindingInfo("type") &&
+        this.getType() === this._defaultType
+      ) {
+        this.bindProperty("type", {
+          path: "/",
+          model: "message",
+          formatter: (messages) =>
+            messages.length > 0 ? "Emphasized" : "Default",
+        });
+      }
+
+      if (
+        !this.getBindingInfo("text") &&
+        this.getText() === this._defaultText
+      ) {
+        this.bindProperty("text", {
+          path: "/",
+          model: "message",
+          formatter: (messages) => messages.length,
+        });
+      }
     };
 
     return MessagePopoverButton;
