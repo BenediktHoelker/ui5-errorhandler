@@ -1,11 +1,9 @@
 sap.ui.define(
   [
-    "sap/ui/base/Object",
-    "sap/m/Button",
     "sap/m/MessagePopover",
     "sap/m/library",
   ],
-  (UI5Object, Button, MessagePopover, SAPMLibrary) =>
+  (MessagePopover, SAPMLibrary) =>
     MessagePopover.extend("errorhandler.MessagePopover", {
       metadata: {
         library: "errorhandler",

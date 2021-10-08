@@ -1,14 +1,9 @@
-specVersion: "2.3"
+specVersion: '2.4'
 metadata:
-  name: errorhandler
+  name: 'errorhandler'
 framework:
   name: SAPUI5
   version: "1.77.2"
   libraries:
     - name: sap.ui.core
 type: library
-builder:
-  resources:
-    excludes:
-      - "**/localService/**"
-      - "**/test/**"
