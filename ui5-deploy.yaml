@@ -7,10 +7,10 @@ builder:
     excludes:
       - /test/**
       - /localService/**
-  customTasks:
-    - name: ui5-task-zipper
-      afterTask: uglify
-      configuration:
-        archiveName: archive
-        additionalFiles:
-          - xs-app.json
+  # customTasks:
+  #   - name: ui5-task-zipper
+  #     afterTask: uglify
+  #     configuration:
+  #       archiveName: archive
+  #       additionalFiles:
+  #         - xs-app.json
