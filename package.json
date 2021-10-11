@@ -11,12 +11,6 @@
         "ui5-task-zipper": "^0.4.4",
         "vsts-npm-auth": "^0.41.0"
     },
-    "ui5": {
-        "dependencies": [
-            "@sap/ux-ui5-tooling",
-            "ui5-task-zipper"
-        ]
-    },
     "keywords": [
         "ui5",
         "openui5",
