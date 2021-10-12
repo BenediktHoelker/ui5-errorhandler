@@ -1,4 +1,4 @@
-specVersion: "2.1"
+specVersion: "2.5"
 metadata:
   name: "errorhandler"
 framework:
@@ -13,6 +13,5 @@ builder:
       afterTask: generateResourcesJson
   resources:
     excludes:
-      - "./.eslintrc"
       - "**/localService/**"
       - "**/test/**"
