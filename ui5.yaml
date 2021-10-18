@@ -1,13 +1,16 @@
-specVersion: "2.3"
+specVersion: "2.5"
 metadata:
-  name: errorhandler
+  name: "errorhandler"
 framework:
   name: SAPUI5
-  version: "1.77.2"
+  version: "1.76.0"
   libraries:
     - name: sap.ui.core
 type: library
 builder:
+  customTasks:
+    - name: ui5-task-flatten-library
+      afterTask: generateResourcesJson
   resources:
     excludes:
       - "**/localService/**"

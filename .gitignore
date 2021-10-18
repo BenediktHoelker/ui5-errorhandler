@@ -19,3 +19,4 @@ APIExternalProducer.js
 node_modules
 /.env
 .env
+/resources/

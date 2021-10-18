@@ -35,7 +35,7 @@ sap.ui.define(
               }
 
               model.attachMetadataFailed(() => reject());
-              model.metadataLoaded().then(resolve);
+              model.metadataLoaded().then(() => resolve());
             })
         )
       ).catch(() => {

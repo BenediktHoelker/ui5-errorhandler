@@ -40,12 +40,12 @@ sap.ui.define(
 
         init(...args) {
           const messageModel = ErrorHandler.getMessageModel();
+
           this.setModel(messageModel, "message");
 
           this._defaultText = this.getText();
           this._defaultType = this.getType();
 
-          // eslint-disable-next-line prefer-rest-params
           Button.prototype.init.apply(this, ...args);
 
           this.setAggregation("_popover", new MessagePopover());
