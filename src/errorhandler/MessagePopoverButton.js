@@ -34,51 +34,55 @@ sap.ui.define(
               type: "string",
               defaultValue: "message",
             },
+            enableMail: {
+              type: "boolean",
+              defaultValue: false,
+            },
           },
         },
-
         renderer: "sap.m.ButtonRenderer",
 
         init(...args) {
+          Button.prototype.init.apply(this, ...args);
+
           const messageModel = ErrorHandler.getMessageModel();
 
           this.setModel(messageModel, "message");
+        },
 
-          Button.prototype.init.apply(this, ...args);
+        openPopover() {
+          const popover = this.getAggregation("_popover");
 
-          this.setAggregation(
-            "_popover",
-            new MessagePopover()
-          );
+          if (popover.isOpen()) return;
 
-          this.attachPress(() => this.getAggregation("_popover").toggle(this));
+          popover.openBy(this);
+        },
+
+        closePopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (!popover.isOpen()) return;
+
+          popover.close();
         },
       }
     );
 
-    MessagePopoverButton.prototype.openPopover = function () {
-      const popover = this.getAggregation("_popover");
-
-      if (popover.isOpen()) return;
-
-      popover.openBy(this);
-    };
-
-    MessagePopoverButton.prototype.closePopover = function () {
-      const popover = this.getAggregation("_popover");
-
-      if (!popover.isOpen()) return;
-
-      popover.close();
-    };
-
     MessagePopoverButton.prototype.onBeforeRendering = async function () {
+      Button.prototype.onBeforeRendering.apply(this);
+
       if (this._alreadyBound) return;
 
       this._alreadyBound = true;
 
       const model = this.getModelName();
-      const popover = this.getAggregation("_popover");
+      const popover = new MessagePopover({
+        enableMail: this.getEnableMail(),
+      });
+
+      this.setAggregation("_popover", popover);
+
+      this.attachPress(() => popover.toggle(this));
 
       // das übergebene Model als Default-Model verwenden, damit die MessageItems einheitlich gebunden werden können
       this.setModel(this.getModel(model));
