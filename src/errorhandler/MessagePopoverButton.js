@@ -11,9 +11,9 @@ sap.ui.define(
       {
         metadata: {
           library: "errorhandler",
-          defaultAggregation: "items",
+          defaultAggregation: "_items",
           aggregations: {
-            items: {
+            _items: {
               type: "sap.m.MessageItem",
               multiple: true,
               singularName: "item",
@@ -29,9 +29,9 @@ sap.ui.define(
               type: "string",
               defaultValue: "sap-icon://message-popup",
             },
-            text: {
+            modelName: {
               type: "string",
-              defaultValue: "",
+              defaultValue: "message",
             },
           },
         },
@@ -43,9 +43,6 @@ sap.ui.define(
 
           this.setModel(messageModel, "message");
 
-          this._defaultText = this.getText();
-          this._defaultType = this.getType();
-
           Button.prototype.init.apply(this, ...args);
 
           this.setAggregation("_popover", new MessagePopover());
@@ -56,47 +53,38 @@ sap.ui.define(
     );
 
     MessagePopoverButton.prototype.onBeforeRendering = async function () {
-      if (!this.getBindingInfo("items")) {
-        const messageItem = await Fragment.load({
-          id: this.getId(),
-          name: `errorhandler.fragments.MessageItem`,
-          controller: this,
-        });
+      const model = this.getModelName();
+      // das übergebene Model als Default-Model verwenden, damit die MessageItems einheitlich gebunden werden können
+      this.setModel(this.getModel(model));
 
-        this.bindAggregation("items", {
-          path: "/",
-          model: "message",
-          template: messageItem,
-        });
-      }
+      const messageItem = await Fragment.load({
+        id: this.getId(),
+        name: `errorhandler.fragments.MessageItem`,
+        controller: this,
+      });
+
+      this.bindAggregation("_items", {
+        path: "/",
+        template: messageItem,
+      });
 
       this.getAggregation("_popover").bindAggregation(
         "items",
-        this.getBindingInfo("items")
+        this.getBindingInfo("_items")
       );
 
-      if (
-        !this.getBindingInfo("type") &&
-        this.getType() === this._defaultType
-      ) {
-        this.bindProperty("type", {
-          path: "/",
-          model: "message",
-          formatter: (messages) =>
-            messages.length > 0 ? "Emphasized" : "Default",
-        });
-      }
+      this.bindProperty("type", {
+        path: "/",
+        model,
+        formatter: (messages) =>
+          messages.length > 0 ? "Emphasized" : "Default",
+      });
 
-      if (
-        !this.getBindingInfo("text") &&
-        this.getText() === this._defaultText
-      ) {
-        this.bindProperty("text", {
-          path: "/",
-          model: "message",
-          formatter: (messages) => messages.length,
-        });
-      }
+      this.bindProperty("text", {
+        path: "/",
+        model,
+        formatter: (messages) => messages.length,
+      });
     };
 
     return MessagePopoverButton;
