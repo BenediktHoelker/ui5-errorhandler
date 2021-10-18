@@ -46,19 +46,41 @@ sap.ui.define(
 
           Button.prototype.init.apply(this, ...args);
 
-          this.setAggregation("_popover", new MessagePopover());
+          this.setAggregation("_popover", new MessagePopover({
+              activeTitlePress: (event) => this.onFocusControl(event)
+          }));
 
           this.attachPress(() => this.getAggregation("_popover").toggle(this));
         },
       }
     );
 
+    MessagePopoverButton.prototype.isItemPositionable = function(controlIds) {
+        return controlIds && Array.isArray(controlIds) && controlIds.length > 0
+    }
+
+    MessagePopoverButton.prototype.onFocusControl = function (event) {
+        const button = event.getSource().getParent();
+        const toolbar = button.getParent();
+        const page = toolbar.getParent(); 
+
+        const message = event.getParameter("item").getBindingContext().getObject();
+        const control = sap.ui.getCore().byId(message.getControlId());
+
+        if (!control || !page || typeof page.scrollToElement !== "function") return;
+
+        page.scrollToElement(control.getDomRef(), 200);
+        setTimeout(() => control.focus(), 300);
+    }
+
     MessagePopoverButton.prototype.onBeforeRendering = async function () {
       if (this._alreadyBound) return;
-        
+
       this._alreadyBound = true;
 
       const model = this.getModelName();
+      const popover = this.getAggregation("_popover");
+
       // das übergebene Model als Default-Model verwenden, damit die MessageItems einheitlich gebunden werden können
       this.setModel(this.getModel(model));
 
@@ -73,10 +95,7 @@ sap.ui.define(
         template: messageItem,
       });
 
-      this.getAggregation("_popover").bindAggregation(
-        "items",
-        this.getBindingInfo("_items")
-      );
+      popover.bindAggregation("items", this.getBindingInfo("_items"));
 
       this.bindProperty("type", {
         path: "/",
