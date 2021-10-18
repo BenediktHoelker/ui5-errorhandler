@@ -72,10 +72,6 @@ sap.ui.define(
       popover.close();
     };
 
-    MessagePopoverButton.prototype._isItemPositionable = function (controlIds) {
-      return controlIds && Array.isArray(controlIds) && controlIds.length > 0;
-    };
-
     MessagePopoverButton.prototype.onBeforeRendering = async function () {
       if (this._alreadyBound) return;
 
@@ -90,7 +86,7 @@ sap.ui.define(
       const messageItem = await Fragment.load({
         id: this.getId(),
         name: `errorhandler.fragments.MessageItem`,
-        controller: this,
+        controller: popover,
       });
 
       this.bindAggregation("_items", {
