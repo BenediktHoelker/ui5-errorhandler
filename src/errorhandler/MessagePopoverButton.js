@@ -96,6 +96,7 @@ sap.ui.define(
       this.bindAggregation("_items", {
         path: "/",
         template: messageItem,
+        templateShareable: true
       });
 
       popover.bindAggregation("items", this.getBindingInfo("_items"));
