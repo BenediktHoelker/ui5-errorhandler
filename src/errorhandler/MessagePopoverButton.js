@@ -46,32 +46,55 @@ sap.ui.define(
 
           Button.prototype.init.apply(this, ...args);
 
-          this.setAggregation("_popover", new MessagePopover({
-              activeTitlePress: (event) => this.onFocusControl(event)
-          }));
+          this.setAggregation(
+            "_popover",
+            new MessagePopover({
+              activeTitlePress: (event) => this._onFocusControl(event),
+            })
+          );
 
           this.attachPress(() => this.getAggregation("_popover").toggle(this));
         },
       }
     );
 
-    MessagePopoverButton.prototype.isItemPositionable = function(controlIds) {
-        return controlIds && Array.isArray(controlIds) && controlIds.length > 0
-    }
+    MessagePopoverButton.prototype.openPopover = function () {
+      const popover = this.getAggregation("_popover");
 
-    MessagePopoverButton.prototype.onFocusControl = function (event) {
-        const button = event.getSource().getParent();
-        const toolbar = button.getParent();
-        const page = toolbar.getParent(); 
+      if (popover.isOpen()) return;
 
-        const message = event.getParameter("item").getBindingContext().getObject();
-        const control = sap.ui.getCore().byId(message.getControlId());
+      popover.openBy(this);
+    };
 
-        if (!control || !page || typeof page.scrollToElement !== "function") return;
+    MessagePopoverButton.prototype.closePopover = function () {
+      const popover = this.getAggregation("_popover");
 
-        page.scrollToElement(control.getDomRef(), 200);
-        setTimeout(() => control.focus(), 300);
-    }
+      if (!popover.isOpen()) return;
+
+      popover.close();
+    };
+
+    MessagePopoverButton.prototype._isItemPositionable = function (controlIds) {
+      return controlIds && Array.isArray(controlIds) && controlIds.length > 0;
+    };
+
+    MessagePopoverButton.prototype._onFocusControl = function (event) {
+      const button = event.getSource().getParent();
+      const toolbar = button.getParent();
+      const page = toolbar.getParent();
+
+      const message = event
+        .getParameter("item")
+        .getBindingContext()
+        .getObject();
+      const control = sap.ui.getCore().byId(message.getControlId());
+
+      if (!control || !page || typeof page.scrollToElement !== "function")
+        return;
+
+      page.scrollToElement(control.getDomRef(), 200);
+      setTimeout(() => control.focus(), 300);
+    };
 
     MessagePopoverButton.prototype.onBeforeRendering = async function () {
       if (this._alreadyBound) return;
