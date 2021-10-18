@@ -54,6 +54,10 @@ sap.ui.define(
     );
 
     MessagePopoverButton.prototype.onBeforeRendering = async function () {
+      if (this._alreadyBound) return;
+        
+      this._alreadyBound = true;
+
       const model = this.getModelName();
       // das übergebene Model als Default-Model verwenden, damit die MessageItems einheitlich gebunden werden können
       this.setModel(this.getModel(model));
