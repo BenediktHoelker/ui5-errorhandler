@@ -1,16 +1,18 @@
 {
     "name": "@iot/ui5-errorhandler",
     "description": "Handle UI5- and OData-messages and display them in MessagePopover/-Box",
-    "version": "2.1.0",
+    "version": "2.1.2",
     "private": false,
     "devDependencies": {
         "@sap/ux-ui5-tooling": "1",
         "@ui5/cli": "^2.11.1",
         "@ui5/fs": "^2.0.6",
         "@ui5/logger": "^2.0.1",
-        "ui5-task-flatten-library": "^0.2.2",
         "ui5-task-zipper": "^0.4.4",
         "vsts-npm-auth": "^0.41.0"
+    },
+    "dependencies": {
+        "ui5-task-flatten-library": "^0.2.2"
     },
     "keywords": [
         "ui5",
