@@ -1,5 +1,5 @@
 {
-  "xsappname": "vonoviaerrorhandler",
+  "xsappname": "ioterrorhandler",
   "tenant-mode": "dedicated",
   "description": "Security profile of called application",
   "scopes": [
