@@ -30,6 +30,10 @@ sap.ui.define(
         setTimeout(() => control.focus(), 300);
       },
 
+      _isItemPositionable(controlIds) {
+        return controlIds && Array.isArray(controlIds) && controlIds.length > 0;
+      },
+
       triggerEmail() {
         const bundle = this.resBundle;
         const appComponent = this.getAppComponent();

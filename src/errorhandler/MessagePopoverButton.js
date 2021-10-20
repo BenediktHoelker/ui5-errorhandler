@@ -65,19 +65,16 @@ sap.ui.define(
       popover.close();
     };
 
-    MessagePopoverButton.prototype._isItemPositionable = function (controlIds) {
-      return controlIds && Array.isArray(controlIds) && controlIds.length > 0;
-    };
-
     MessagePopoverButton.prototype.onBeforeRendering = async function () {
       const model = this.getModelName();
       // das übergebene Model als Default-Model verwenden, damit die MessageItems einheitlich gebunden werden können
       this.setModel(this.getModel(model));
 
+      const popover = this.getAggregation("_popover");
       const messageItem = await Fragment.load({
         id: this.getId(),
         name: `errorhandler.fragments.MessageItem`,
-        controller: this,
+        controller: popover,
       });
 
       this.bindAggregation("_items", {
@@ -85,7 +82,7 @@ sap.ui.define(
         template: messageItem,
       });
 
-      this.getAggregation("_popover").bindAggregation(
+      popover.bindAggregation(
         "items",
         this.getBindingInfo("_items")
       );
