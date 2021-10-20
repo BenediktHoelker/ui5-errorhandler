@@ -19,7 +19,7 @@ modules:
             name: iot-errorhandler-uaa-key
     parameters:
       content:
-        subaccount:
+        instance:
           destinations:
             - Name: iot-errorhandler_repo_host
               ServiceInstanceName: iot-errorhandler-html5-srv
