@@ -78,6 +78,12 @@ sap.ui.define(
       const model = this.getModelName();
       const popover = this.getAggregation("_popover");
 
+      const bindingInfo = this.getBindingInfo("_items");
+      if (bindingInfo) {
+        popover.bindAggregation("items", bindingInfo);
+        return;
+      }
+
       // das übergebene Model als Default-Model verwenden, damit die MessageItems einheitlich gebunden werden können
       this.setModel(this.getModel(model));
 
@@ -90,7 +96,7 @@ sap.ui.define(
       this.bindAggregation("_items", {
         path: "/",
         template: messageItem,
-        templateShareable: true
+        templateShareable: true,
       });
 
       popover.bindAggregation("items", this.getBindingInfo("_items"));
