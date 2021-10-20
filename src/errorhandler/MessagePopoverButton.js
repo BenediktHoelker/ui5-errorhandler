@@ -34,6 +34,10 @@ sap.ui.define(
               type: "string",
               defaultValue: "message",
             },
+            enableMail: {
+              type: "boolean",
+              defaultValue: false,
+            },
           },
         },
 
@@ -41,7 +45,6 @@ sap.ui.define(
 
         init(...args) {
           const messageModel = ErrorHandler.getMessageModel();
-
           this.setModel(messageModel, "message");
 
           Button.prototype.init.apply(this, ...args);
@@ -50,27 +53,34 @@ sap.ui.define(
 
           this.attachPress(() => this.getAggregation("_popover").toggle(this));
         },
+
+        openPopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (popover.isOpen()) return;
+
+          popover.openBy(this);
+        },
+
+        closePopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (!popover.isOpen()) return;
+
+          popover.close();
+        },
       }
     );
 
-    MessagePopoverButton.prototype.openPopover = function () {
-      const popover = this.getAggregation("_popover");
-      if (popover.isOpen()) return;
-      popover.openBy(this);
-    };
-
-    MessagePopoverButton.prototype.closePopover = function () {
-      const popover = this.getAggregation("_popover");
-      if (!popover.isOpen()) return;
-      popover.close();
-    };
-
     MessagePopoverButton.prototype.onBeforeRendering = async function () {
+      Button.prototype.onBeforeRendering.apply(this);
+
       const model = this.getModelName();
+      const popover = this.getAggregation("_popover");
+
       // das übergebene Model als Default-Model verwenden, damit die MessageItems einheitlich gebunden werden können
       this.setModel(this.getModel(model));
 
-      const popover = this.getAggregation("_popover");
       const messageItem = await Fragment.load({
         id: this.getId(),
         name: `errorhandler.fragments.MessageItem`,
@@ -82,10 +92,8 @@ sap.ui.define(
         template: messageItem,
       });
 
-      popover.bindAggregation(
-        "items",
-        this.getBindingInfo("_items")
-      );
+      popover.bindAggregation("items", this.getBindingInfo("_items"));
+      popover.setEnableMail(this.getEnableMail());
 
       this.bindProperty("type", {
         path: "/",

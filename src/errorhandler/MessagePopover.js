@@ -1,102 +1,143 @@
 sap.ui.define(
-  ["sap/m/MessagePopover", "sap/m/library"],
-  (MessagePopover, SAPMLibrary) =>
-    MessagePopover.extend("errorhandler.MessagePopover", {
-      metadata: {
-        library: "errorhandler",
-        properties: {},
-        events: {},
-      },
-      renderer: "sap.m.MessagePopoverRenderer",
+  [
+    "sap/m/Button",
+    "sap/m/MessagePopover",
+    "sap/m/library",
+    "sap/ui/model/resource/ResourceModel",
+  ],
+  (Button, MessagePopover, SAPMLibrary, ResourceModel) => {
+    const messagePopover = MessagePopover.extend(
+      "errorhandler.MessagePopover",
+      {
+        metadata: {
+          library: "errorhandler",
+          properties: {
+            enableMail: {
+              type: "boolean",
+              defaultValue: false,
+            },
+          },
+          events: {},
+        },
+        renderer: "sap.m.MessagePopoverRenderer",
 
-      init(...args) {
-        MessagePopover.prototype.init.apply(this, ...args);
+        init(...args) {
+          MessagePopover.prototype.init.apply(this, ...args);
 
-        this.attachActiveTitlePress((event) => this.focusControl(event));
-      },
+          this._resBundle = new ResourceModel({
+            bundleName: "errorhandler.i18n.i18n",
+          }).getResourceBundle();
 
-      focusControl(event) {
-        const button = event.getSource().getParent();
-        const toolbar = button.getParent();
-        const page = toolbar.getParent();
-        const message = event
-          .getParameter("item")
-          .getBindingContext()
-          .getObject();
-        const control = sap.ui.getCore().byId(message.getControlId());
-        if (!control || !page || typeof page.scrollToElement !== "function")
-          return;
-        page.scrollToElement(control.getDomRef(), 200);
-        setTimeout(() => control.focus(), 300);
-      },
+          this.attachActiveTitlePress((event) => this.focusControl(event));
+        },
 
-      _isItemPositionable(controlIds) {
-        return controlIds && Array.isArray(controlIds) && controlIds.length > 0;
-      },
+        focusControl(event) {
+          const button = event.getSource().getParent();
+          const toolbar = button.getParent();
+          const page = toolbar.getParent();
+          const message = event
+            .getParameter("item")
+            .getBindingContext()
+            .getObject();
+          const control = sap.ui.getCore().byId(message.getControlId());
+          if (!control || !page || typeof page.scrollToElement !== "function")
+            return;
+          page.scrollToElement(control.getDomRef(), 200);
+          setTimeout(() => control.focus(), 300);
+        },
 
-      triggerEmail() {
-        const bundle = this.resBundle;
-        const appComponent = this.getAppComponent();
+        _isItemPositionable(controlIds) {
+          return (
+            controlIds && Array.isArray(controlIds) && controlIds.length > 0
+          );
+        },
 
-        const subject = bundle.getText(
-          "mailTitle",
-          appComponent
-            ? appComponent.getManifest()["sap.app"].title
-            : [window.location.href]
-        );
-        const body = this.getUserInfos() + this.getMsgInfos();
+        triggerEmail() {
+          const bundle = this._resBundle;
+          const appComponent = this.getAppComponent();
 
-        SAPMLibrary.URLHelper.triggerEmail({
-          address: bundle.getText("mailAddress"),
-          subject,
-          body,
-        });
-      },
+          const subject = bundle.getText(
+            "mailTitle",
+            appComponent
+              ? appComponent.getManifest()["sap.app"].title
+              : [window.location.href]
+          );
+          const body = this.getUserInfos() + this.getMsgInfos();
 
-      getAppComponent() {
-        if (!sap.ushell || !sap.ushell.Container) return undefined;
+          SAPMLibrary.URLHelper.triggerEmail(
+            bundle.getText("mailAddress"),
+            subject,
+            body
+          );
+        },
 
-        return sap.ushell.Container.getService(
-          "AppLifeCycle"
-        ).getCurrentApplication().componentInstance;
-      },
+        getAppComponent() {
+          if (!sap.ushell || !sap.ushell.Container) return undefined;
 
-      getUserInfos() {
-        if (!sap.ushell || !sap.ushell.Container) return "";
+          return sap.ushell.Container.getService(
+            "AppLifeCycle"
+          ).getCurrentApplication().componentInstance;
+        },
 
-        const appComponent = this.getAppComponent();
-        const user = appComponent.getModel("user").getProperty("/user");
+        getUserInfos() {
+          if (!sap.ushell || !sap.ushell.Container) return "";
 
-        // falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
-        // ansonsten wird der User der Shell verwendet
-        if (user) {
-          return this.resBundle.getText("userInformationLong", [
-            user.PersonalFullName,
-            user.UserName,
-            user.PlantName,
-            user.Plant,
-          ]);
-        }
+          const appComponent = this.getAppComponent();
+          const user = appComponent.getModel("user").getProperty("/user");
 
-        return this.resBundle.getText(
-          "userInformationShort",
-          sap.ushell.Container.getService("UserInfo").getId()
-        );
-      },
+          // falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
+          // ansonsten wird der User der Shell verwendet
+          if (user) {
+            return this._resBundle.getText("userInformationLong", [
+              user.PersonalFullName,
+              user.UserName,
+              user.PlantName,
+              user.Plant,
+            ]);
+          }
 
-      getMsgInfos() {
-        return JSON.stringify(
-          this.messageModel.getData().map((message) => {
-            // anstatt dem Timestamp soll Datum und Uhrzeit in leslicher Form ausgegeben werden
-            const time = new Date(message.date);
+          return this._resBundle.getText(
+            "userInformationShort",
+            sap.ushell.Container.getService("UserInfo").getId()
+          );
+        },
 
-            return {
-              ...message,
-              date: time.toLocaleDateString(),
-              time: time.toLocaleTimeString(),
-            };
-          })
-        );
-      },
-    })
+        getMsgInfos() {
+          return JSON.stringify(
+            this.getModel()
+              .getData()
+              .map(({ processor, ...message }) => {
+                // anstatt dem Timestamp soll Datum und Uhrzeit in leslicher Form ausgegeben werden
+                const time = new Date(message.date);
+
+                return {
+                  ...message,
+                  date: time.toLocaleDateString(),
+                  time: time.toLocaleTimeString(),
+                };
+              })
+          );
+        },
+      }
+    );
+
+    messagePopover.prototype.onBeforeRenderingPopover = async function () {
+      MessagePopover.prototype.onBeforeRenderingPopover.apply(this);
+
+      if (this._alreadyRendered) return;
+
+      this._alreadyRendered = true;
+
+      if (!this.getEnableMail()) return;
+
+      this.setHeaderButton(
+        new Button({
+          text: this._resBundle.getText("sendMail"),
+          press: () => this.triggerEmail(),
+        })
+      );
+    };
+
+    return messagePopover;
+  }
 );
