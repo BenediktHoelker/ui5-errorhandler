@@ -49,7 +49,7 @@ sap.ui.define(
           this.setAggregation(
             "_popover",
             new MessagePopover({
-              activeTitlePress: (event) => this.onFocusControl(event),
+              activeTitlePress: (event) => this._onFocusControl(event),
             })
           );
 
@@ -58,11 +58,23 @@ sap.ui.define(
       }
     );
 
-    MessagePopoverButton.prototype.isItemPositionable = function (controlIds) {
+    MessagePopoverButton.prototype.openPopover = function () {
+      const popover = this.getAggregation("_popover");
+      if (popover.isOpen()) return;
+      popover.openBy(this);
+    };
+
+    MessagePopoverButton.prototype.closePopover = function () {
+      const popover = this.getAggregation("_popover");
+      if (!popover.isOpen()) return;
+      popover.close();
+    };
+
+    MessagePopoverButton.prototype._isItemPositionable = function (controlIds) {
       return controlIds && Array.isArray(controlIds) && controlIds.length > 0;
     };
 
-    MessagePopoverButton.prototype.onFocusControl = function (event) {
+    MessagePopoverButton.prototype._onFocusControl = function (event) {
       const button = event.getSource().getParent();
       const toolbar = button.getParent();
       const page = toolbar.getParent();
