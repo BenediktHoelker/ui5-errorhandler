@@ -1,8 +1,5 @@
 sap.ui.define(
-  [
-    "sap/m/MessagePopover",
-    "sap/m/library",
-  ],
+  ["sap/m/MessagePopover", "sap/m/library"],
   (MessagePopover, SAPMLibrary) =>
     MessagePopover.extend("errorhandler.MessagePopover", {
       metadata: {
@@ -14,6 +11,23 @@ sap.ui.define(
 
       init(...args) {
         MessagePopover.prototype.init.apply(this, ...args);
+
+        this.attachActiveTitlePress((event) => this.focusControl(event));
+      },
+
+      focusControl(event) {
+        const button = event.getSource().getParent();
+        const toolbar = button.getParent();
+        const page = toolbar.getParent();
+        const message = event
+          .getParameter("item")
+          .getBindingContext()
+          .getObject();
+        const control = sap.ui.getCore().byId(message.getControlId());
+        if (!control || !page || typeof page.scrollToElement !== "function")
+          return;
+        page.scrollToElement(control.getDomRef(), 200);
+        setTimeout(() => control.focus(), 300);
       },
 
       triggerEmail() {
