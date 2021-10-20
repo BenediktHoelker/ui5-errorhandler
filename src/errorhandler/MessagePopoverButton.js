@@ -4,8 +4,9 @@ sap.ui.define(
     "./ErrorHandler",
     "sap/ui/core/Fragment",
     "./MessagePopover",
+    "sap/ui/core/MessageType",
   ],
-  (Button, ErrorHandler, Fragment, MessagePopover) => {
+  (Button, ErrorHandler, Fragment, MessagePopover, MessageType) => {
     const MessagePopoverButton = Button.extend(
       "errorhandler.MessagePopoverButton",
       {
@@ -76,12 +77,27 @@ sap.ui.define(
       this.bindProperty("type", {
         path: "/",
         formatter: (messages) =>
-          messages.length > 0 ? "Emphasized" : "Default",
+          messages.filter((message) => {
+            const messageType = message.getType();
+            return (
+              messageType === MessageType.Error ||
+              messageType === MessageType.Warning
+            );
+          }).length > 0
+            ? "Emphasized"
+            : "Default",
       });
 
       this.bindProperty("text", {
         path: "/",
-        formatter: (messages) => messages.length,
+        formatter: (messages) =>
+          messages.filter((message) => {
+            const messageType = message.getType();
+            return (
+              messageType === MessageType.Error ||
+              messageType === MessageType.Warning
+            );
+          }).length,
       });
     };
 
