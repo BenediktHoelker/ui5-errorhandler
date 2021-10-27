@@ -24,12 +24,12 @@ modules:
             - Name: errorhandler_repo_host
               ServiceInstanceName: errorhandler-html5-srv
               ServiceKeyName: errorhandler-repo-host-key
-              sap.cloud.service: vonovia.errorhandler
+              sap.cloud.service: iot
             - Authentication: OAuth2UserTokenExchange
               Name: errorhandler_uaa
               ServiceInstanceName: errorhandler-xsuaa-srv
               ServiceKeyName: errorhandler-uaa-key
-              sap.cloud.service: vonovia.errorhandler
+              sap.cloud.service: iot
           existing_destinations_policy: ignore
     build-parameters:
       no-source: true
@@ -44,10 +44,10 @@ modules:
       build-result: resources
       requires:
         - artifacts:
-            - vonoviaerrorhandler.zip
-          name: vonoviaerrorhandler
+            - errorhandler.zip
+          name: errorhandler
           target-path: resources/
-  - name: vonoviaerrorhandler
+  - name: errorhandler
     type: html5
     path: .
     build-parameters:
