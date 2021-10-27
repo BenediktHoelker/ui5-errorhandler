@@ -46,8 +46,23 @@ sap.ui.define(
           Button.prototype.init.apply(this, ...args);
 
           const messageModel = ErrorHandler.getMessageModel();
-
           this.setModel(messageModel, "message");
+        },
+
+        openPopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (popover.isOpen()) return;
+
+          popover.openBy(this);
+        },
+
+        closePopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (!popover.isOpen()) return;
+
+          popover.close();
         },
 
         openPopover() {

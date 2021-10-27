@@ -35,13 +35,12 @@ sap.ui.define(
           const button = event.getSource().getParent();
           const toolbar = button.getParent();
           const page = toolbar.getParent();
-
           const message = event
             .getParameter("item")
             .getBindingContext()
             .getObject();
           const control = sap.ui.getCore().byId(message.getControlId());
-
+          
           if (!control || !page || typeof page.scrollToElement !== "function")
             return;
 
@@ -70,7 +69,7 @@ sap.ui.define(
           SAPMLibrary.URLHelper.triggerEmail(
             bundle.getText("mailAddress"),
             subject,
-            body,
+            body
           );
         },
 
@@ -107,16 +106,18 @@ sap.ui.define(
 
         getMsgInfos() {
           return JSON.stringify(
-            this.getModel().getData().map(({processor, ...message}) => {
-              // anstatt dem Timestamp soll Datum und Uhrzeit in leslicher Form ausgegeben werden
-              const time = new Date(message.date);
+            this.getModel()
+              .getData()
+              .map(({ processor, ...message }) => {
+                // anstatt dem Timestamp soll Datum und Uhrzeit in leslicher Form ausgegeben werden
+                const time = new Date(message.date);
 
-              return {
-                ...message,
-                date: time.toLocaleDateString(),
-                time: time.toLocaleTimeString(),
-              };
-            })
+                return {
+                  ...message,
+                  date: time.toLocaleDateString(),
+                  time: time.toLocaleTimeString(),
+                };
+              })
           );
         },
       }
