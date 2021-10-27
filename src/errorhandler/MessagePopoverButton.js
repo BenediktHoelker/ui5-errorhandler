@@ -40,18 +40,29 @@ sap.ui.define(
             },
           },
         },
-
         renderer: "sap.m.ButtonRenderer",
 
         init(...args) {
-          const messageModel = ErrorHandler.getMessageModel();
-          this.setModel(messageModel, "message");
-
           Button.prototype.init.apply(this, ...args);
 
-          this.setAggregation("_popover", new MessagePopover());
+          const messageModel = ErrorHandler.getMessageModel();
+          this.setModel(messageModel, "message");
+        },
 
-          this.attachPress(() => this.getAggregation("_popover").toggle(this));
+        openPopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (popover.isOpen()) return;
+
+          popover.openBy(this);
+        },
+
+        closePopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (!popover.isOpen()) return;
+
+          popover.close();
         },
 
         openPopover() {
@@ -75,14 +86,18 @@ sap.ui.define(
     MessagePopoverButton.prototype.onBeforeRendering = async function () {
       Button.prototype.onBeforeRendering.apply(this);
 
-      const model = this.getModelName();
-      const popover = this.getAggregation("_popover");
+      if (this._alreadyBound) return;
 
-      const bindingInfo = this.getBindingInfo("_items");
-      if (bindingInfo) {
-        popover.bindAggregation("items", bindingInfo);
-        return;
-      }
+      this._alreadyBound = true;
+
+      const model = this.getModelName();
+      const popover = new MessagePopover({
+        enableMail: this.getEnableMail(),
+      });
+
+      this.setAggregation("_popover", popover);
+
+      this.attachPress(() => popover.toggle(this));
 
       // das übergebene Model als Default-Model verwenden, damit die MessageItems einheitlich gebunden werden können
       this.setModel(this.getModel(model));
@@ -96,14 +111,14 @@ sap.ui.define(
       this.bindAggregation("_items", {
         path: "/",
         template: messageItem,
-        templateShareable: true,
+        templateShareable: true
       });
 
       popover.bindAggregation("items", this.getBindingInfo("_items"));
-      popover.setEnableMail(this.getEnableMail());
 
       this.bindProperty("type", {
         path: "/",
+        model,
         formatter: (messages) =>
           messages.filter((message) => {
             const messageType = message.getType();
@@ -118,6 +133,7 @@ sap.ui.define(
 
       this.bindProperty("text", {
         path: "/",
+        model,
         formatter: (messages) =>
           messages.filter((message) => {
             const messageType = message.getType();

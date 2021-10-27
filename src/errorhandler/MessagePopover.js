@@ -40,8 +40,10 @@ sap.ui.define(
             .getBindingContext()
             .getObject();
           const control = sap.ui.getCore().byId(message.getControlId());
+          
           if (!control || !page || typeof page.scrollToElement !== "function")
             return;
+
           page.scrollToElement(control.getDomRef(), 200);
           setTimeout(() => control.focus(), 300);
         },
