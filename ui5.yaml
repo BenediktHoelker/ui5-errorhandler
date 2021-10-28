@@ -8,9 +8,6 @@ framework:
     - name: sap.ui.core
 type: library
 builder:
-  customTasks:
-    - name: ui5-task-flatten-library
-      afterTask: generateResourcesJson
   resources:
     excludes:
       - "**/localService/**"
