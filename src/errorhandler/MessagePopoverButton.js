@@ -4,16 +4,17 @@ sap.ui.define(
     "./ErrorHandler",
     "sap/ui/core/Fragment",
     "./MessagePopover",
+    "sap/ui/core/MessageType",
   ],
-  (Button, ErrorHandler, Fragment, MessagePopover) => {
+  (Button, ErrorHandler, Fragment, MessagePopover, MessageType) => {
     const MessagePopoverButton = Button.extend(
       "errorhandler.MessagePopoverButton",
       {
         metadata: {
           library: "errorhandler",
-          defaultAggregation: "items",
+          defaultAggregation: "_items",
           aggregations: {
-            items: {
+            _items: {
               type: "sap.m.MessageItem",
               multiple: true,
               singularName: "item",
@@ -29,74 +30,119 @@ sap.ui.define(
               type: "string",
               defaultValue: "sap-icon://message-popup",
             },
-            text: {
+            modelName: {
               type: "string",
-              defaultValue: "",
+              defaultValue: "message",
+            },
+            enableMail: {
+              type: "boolean",
+              defaultValue: false,
             },
           },
         },
-
         renderer: "sap.m.ButtonRenderer",
 
         init(...args) {
-          const messageModel = ErrorHandler.getMessageModel();
-
-          this.setModel(messageModel, "message");
-
-          this._defaultText = this.getText();
-          this._defaultType = this.getType();
-
           Button.prototype.init.apply(this, ...args);
 
-          this.setAggregation("_popover", new MessagePopover());
+          const messageModel = ErrorHandler.getMessageModel();
+          this.setModel(messageModel, "message");
+        },
 
-          this.attachPress(() => this.getAggregation("_popover").toggle(this));
+        openPopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (popover.isOpen()) return;
+
+          popover.openBy(this);
+        },
+
+        closePopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (!popover.isOpen()) return;
+
+          popover.close();
+        },
+
+        openPopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (popover.isOpen()) return;
+
+          popover.openBy(this);
+        },
+
+        closePopover() {
+          const popover = this.getAggregation("_popover");
+
+          if (!popover.isOpen()) return;
+
+          popover.close();
         },
       }
     );
 
     MessagePopoverButton.prototype.onBeforeRendering = async function () {
-      if (!this.getBindingInfo("items")) {
-        const messageItem = await Fragment.load({
-          id: this.getId(),
-          name: `errorhandler.fragments.MessageItem`,
-          controller: this,
-        });
+      Button.prototype.onBeforeRendering.apply(this);
 
-        this.bindAggregation("items", {
-          path: "/",
-          model: "message",
-          template: messageItem,
-        });
-      }
+      if (this._alreadyBound) return;
 
-      this.getAggregation("_popover").bindAggregation(
-        "items",
-        this.getBindingInfo("items")
-      );
+      this._alreadyBound = true;
 
-      if (
-        !this.getBindingInfo("type") &&
-        this.getType() === this._defaultType
-      ) {
-        this.bindProperty("type", {
-          path: "/",
-          model: "message",
-          formatter: (messages) =>
-            messages.length > 0 ? "Emphasized" : "Default",
-        });
-      }
+      const model = this.getModelName();
+      const popover = new MessagePopover({
+        enableMail: this.getEnableMail(),
+      });
 
-      if (
-        !this.getBindingInfo("text") &&
-        this.getText() === this._defaultText
-      ) {
-        this.bindProperty("text", {
-          path: "/",
-          model: "message",
-          formatter: (messages) => messages.length,
-        });
-      }
+      this.setAggregation("_popover", popover);
+
+      this.attachPress(() => popover.toggle(this));
+
+      // das übergebene Model als Default-Model verwenden, damit die MessageItems einheitlich gebunden werden können
+      this.setModel(this.getModel(model));
+
+      const messageItem = await Fragment.load({
+        id: this.getId(),
+        name: `errorhandler.fragments.MessageItem`,
+        controller: popover,
+      });
+
+      this.bindAggregation("_items", {
+        path: "/",
+        template: messageItem,
+        templateShareable: true
+      });
+
+      popover.bindAggregation("items", this.getBindingInfo("_items"));
+
+      this.bindProperty("type", {
+        path: "/",
+        model,
+        formatter: (messages) =>
+          messages.filter((message) => {
+            const messageType = message.getType();
+            return (
+              messageType === MessageType.Error ||
+              messageType === MessageType.Warning
+            );
+          }).length > 0
+            ? "Emphasized"
+            : "Default",
+      });
+
+      this.bindProperty("text", {
+        path: "/",
+        model,
+        formatter: (messages) =>
+          messages.filter((message) => {
+            const messageType = message.getType();
+            return (
+              messageType === MessageType.Error ||
+              messageType === MessageType.Warning
+            );
+          }).length,
+      });
     };
 
     return MessagePopoverButton;

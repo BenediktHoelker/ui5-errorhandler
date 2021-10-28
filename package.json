@@ -1,18 +1,19 @@
 {
     "name": "@iot/ui5-errorhandler",
     "description": "Handle UI5- and OData-messages and display them in MessagePopover/-Box",
-    "version": "2.1.2",
+    "version": "2.2.5",
     "private": false,
     "devDependencies": {
         "@sap/ux-ui5-tooling": "1",
         "@ui5/cli": "^2.11.1",
         "@ui5/fs": "^2.0.6",
         "@ui5/logger": "^2.0.1",
+        "ui5-task-flatten-library": "^0.2.2",
+        "ui5-task-nwabap-deployer": "^1.0.15",
         "ui5-task-zipper": "^0.4.4",
         "vsts-npm-auth": "^0.41.0"
     },
     "dependencies": {
-        "ui5-task-flatten-library": "^0.2.2"
     },
     "keywords": [
         "ui5",
@@ -21,14 +22,16 @@
     ],
     "ui5": {
         "dependencies": [
-            "ui5-task-flatten-library"
+            "ui5-task-flatten-library",
+            "ui5-task-nwabap-deployer"
         ]
     },
     "scripts": {
         "start": "fiori run --open 'index.html'",
         "start-local": "fiori run --config ./ui5-local.yaml --open 'index.html'",
         "start-noflp": "fiori run --open 'index.html'",
-        "build": "ui5 build --clean-dest --include-task=generateManifestBundle generateCachebusterInfo",
+        "build": "ui5 build --config ui5-deploy-MEN.yaml --clean-dest --include-task=generateManifestBundle generateCachebusterInfo",
+        "deploy:MEN": "ui5 build --config ui5-deploy-MEN.yaml --clean-dest --include-task=generateManifestBundle generateCachebusterInfo",
         "deploy": "fiori verify",
         "deploy-config": "fiori add deploy-config",
         "build:mta": "mbt build --mtar archive",

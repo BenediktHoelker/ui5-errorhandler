@@ -6,8 +6,8 @@
 		"applicationVersion": {
 			"version": "1.0.0"
 		},
-		"title": "library",
-		"description": "",
+		"title": "Errorhandler",
+		"description": "Handles errors and displays them in a popup",
 		"ach": "",
 		"offline": true
 	},
@@ -43,6 +43,6 @@
 	},
 	"sap.cloud": {
 		"public": true,
-		"service": "iot.errorhandler"
+		"service": "iot"
 	}
 }
