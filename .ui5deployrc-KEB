@@ -7,6 +7,8 @@
     "package": "Z_IOT",
     "bspContainer": "ZERRORHANDLER",
     "bspContainerText": "UI5 Errorhandler der IOT GmbH",
-    "transportNo": "TG1K900330",
-    "calculateApplicationIndex": true
+    "calculateApplicationIndex": true,
+    "createTransport": true,
+    "transportText": "UI5 Fehlerhandling",
+    "transportUseLocked": true
 }
