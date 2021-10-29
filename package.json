@@ -7,7 +7,9 @@
         "@sap/ux-ui5-tooling": "1",
         "@ui5/cli": "^2.11.1",
         "@ui5/fs": "^2.0.6",
-        "@ui5/logger": "^2.0.1",
+        "@ui5/logger": "^2.0.1"
+    },
+    "dependencies": {
         "ui5-task-flatten-library": "^0.2.2",
         "ui5-task-zipper": "^0.4.4"
     },
