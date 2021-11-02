@@ -19,3 +19,5 @@ builder:
       afterTask: ui5-task-flatten-library
       configuration:
         archiveName: iot-errorhandler
+        additionalFiles:
+          - xs-app.json

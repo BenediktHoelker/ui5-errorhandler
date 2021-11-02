@@ -13,15 +13,24 @@ modules:
         parameters:
           service-key:
             name: iot-errorhandler-repo-host-key
+      - name: iot-errorhandler-uaa
+        parameters:
+          service-key:
+            name: iot-errorhandler-uaa-key
     parameters:
       content:
-        instance:
+        subaccount:
           destinations:
             - Name: iot-errorhandler_repo_host
               ServiceInstanceName: iot-errorhandler-html5-srv
               ServiceKeyName: iot-errorhandler-repo-host-key
               sap.cloud.service: iot.errorhandler
-          existing_destinations_policy: ignore
+            - Authentication: OAuth2UserTokenExchange
+              Name: iot-errorhandler_uaa
+              ServiceInstanceName: iot-errorhandler-xsuaa-srv
+              ServiceKeyName: iot-errorhandler-uaa-key
+              sap.cloud.service: iot.errorhandler
+          existing_destinations_policy: update
     build-parameters:
       no-source: true
   - name: iot-errorhandler-app-content
@@ -55,6 +64,13 @@ resources:
       service: destination
       service-name: iot-errorhandler-dest-srv
       service-plan: lite
+  - name: iot-errorhandler-uaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      path: ./xs-security.json
+      service: xsuaa
+      service-name: iot-errorhandler-xsuaa-srv
+      service-plan: application
   - name: iot-errorhandler-repo-host
     type: org.cloudfoundry.managed-service
     parameters:

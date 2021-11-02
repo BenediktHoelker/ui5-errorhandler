@@ -43,6 +43,6 @@
 	},
 	"sap.cloud": {
 		"public": true,
-		"service": "iot"
+		"service": "iot.errorhandler"
 	}
 }
