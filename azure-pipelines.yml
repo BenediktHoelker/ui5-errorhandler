@@ -17,6 +17,10 @@ jobs:
       name: Azure Pipelines
     steps:
       - checkout: self
+      - task: npmAuthenticate@0
+        inputs:
+          workingFile: .npmrc
+          customEndpoint: IOTArtifacts
       - task: CmdLine@2
         displayName: Install Dependencies
         inputs:
