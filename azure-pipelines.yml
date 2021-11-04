@@ -30,7 +30,13 @@ jobs:
         inputs:
           script: mbt build -p=cf -s=$(Agent.BuildDirectory)/s
       - task: PublishPipelineArtifact@1
-        displayName: Publish Pipeline Artifact
+        displayName: Publish Pipeline Artifact for BTP
         inputs:
           path: $(Agent.BuildDirectory)/s/mta_archives/iot-errorhandler_0.0.1.mtar
           artifactName: UI5AppMTA
+      - task: PublishPipelineArtifact@1
+        displayName: Publish Pipeline Artifact for OnPrem
+        inputs:
+          path: $(Agent.BuildDirectory)/s/dist
+          artifactName: UI5App
+
