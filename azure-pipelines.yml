@@ -32,5 +32,5 @@ jobs:
       - task: PublishPipelineArtifact@1
         displayName: Publish Pipeline Artifact
         inputs:
-          path: $(Agent.BuildDirectory)/s/mta_archives/errorhandler_0.0.1.mtar
+          path: $(Agent.BuildDirectory)/s/mta_archives/iot-errorhandler_0.0.1.mtar
           artifactName: UI5AppMTA
