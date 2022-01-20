@@ -26,7 +26,8 @@
     ],
     "scripts": {
         "lint": "eslint src",
-        "build": "ui5 build --clean-dest --include-task=generateManifestBundle generateCachebusterInfo",
+		"build": "ui5 build --clean-dest && rimraf npm_dist && mkdir npm_dist && mkdir npm_dist\\src && mkdir npm_dist\\src\\errorhandler && cp -a dist\\. npm_dist\\src\\errorhandler && cp {ui5.yaml,.npmrc,package.json} npm_dist",
+		"release": "npm version patch && npm run build && cd npm_dist && npm publish",
         "build:cf": "npm run build",
         "deploy:cf": "cf deploy mta_archives/iot-errorhandler_0.0.1.mtar",
         "build-and-deploy:cf": "mbt build && npm run deploy:cf"
