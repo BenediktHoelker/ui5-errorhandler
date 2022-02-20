@@ -13,5 +13,3 @@ if (argv.btpCloudService) {
 manifest["sap.app"].applicationVersion.version = version;
 
 writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
-
-console.log(argv);

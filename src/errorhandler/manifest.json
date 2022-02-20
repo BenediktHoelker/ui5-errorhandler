@@ -4,7 +4,7 @@
     "id": "errorhandler",
     "type": "library",
     "applicationVersion": {
-      "version": "2.2.15"
+      "version": "2.2.17"
     },
     "title": "Errorhandler",
     "description": "Handles errors and displays them in a popup",
@@ -43,6 +43,6 @@
   },
   "sap.cloud": {
     "public": true,
-    "service": "45676"
+    "service": "%npm_config_btpCloudService%"
   }
 }
