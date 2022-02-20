@@ -43,6 +43,6 @@
   },
   "sap.cloud": {
     "public": true,
-    "service": "vonovia.hwk4"
+    "service": "45676"
   }
 }

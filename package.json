@@ -27,7 +27,7 @@
     ],
     "scripts": {
         "lint": "eslint src",
-        "set-cloud-service": "node scripts/set-cloud-service --to=%npm_config_btpCloudService%",
+        "set-cloud-service": "node set-cloud-service --to=%npm_config_btpCloudService%",
         "build": "npm run set-cloud-service && ui5 build --include-task=generateCachebusterInfo --clean-dest && rimraf npm_dist && mkdir npm_dist && mkdir npm_dist\\src && mkdir npm_dist\\src\\errorhandler && cp -a dist\\. npm_dist\\src\\errorhandler && cp {ui5.yaml,.npmrc,package.json,xs-app.json} npm_dist && cp xs-app.json dist",
         "release": "npm version patch && node scripts/update-versions && npm run build && cd npm_dist && npm publish",
         "build:cf": "npm run build",
