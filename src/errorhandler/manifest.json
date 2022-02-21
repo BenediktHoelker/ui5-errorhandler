@@ -43,6 +43,6 @@
   },
   "sap.cloud": {
     "public": true,
-    "service": "%npm_config_btpCloudService%"
+    "service": "vonovia.hwk4"
   }
 }
