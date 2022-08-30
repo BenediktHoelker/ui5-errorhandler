@@ -1,11 +1,12 @@
 sap.ui.define(
   [
     "./ErrorParser",
+    "sap/base/Log",
     "sap/ui/core/message/Message",
     "sap/m/MessageBox",
     "sap/ui/model/resource/ResourceModel",
   ],
-  (ErrorParser, Message, MessageBox) => ({
+  (ErrorParser, Log, Message, MessageBox) => ({
     cover(ODataModels) {
       const msgManager = this.getMessageManager();
 
@@ -38,7 +39,8 @@ sap.ui.define(
               model.metadataLoaded().then(() => resolve());
             })
         )
-      ).catch(() => {
+      ).catch((error) => {
+        Log.error(error);
         throw new Error(this.resBundle.getText("metadataLoadingFailed"));
       });
     },
