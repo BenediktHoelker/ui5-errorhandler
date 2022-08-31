@@ -26,7 +26,7 @@
     ],
     "scripts": {
         "lint": "eslint src",
-        "build": "ui5 build --clean-dest --include-task=generateManifestBundle generateCachebusterInfo",
+        "build": "ui5 build --config ui5-deploy.yaml --clean-dest --include-task=generateManifestBundle generateCachebusterInfo",
         "build:cf": "npm run build",
         "deploy:cf": "cf deploy mta_archives/iot-errorhandler_0.0.1.mtar",
         "build-and-deploy:cf": "mbt build && npm run deploy:cf"

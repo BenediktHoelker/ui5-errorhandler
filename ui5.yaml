@@ -12,12 +12,12 @@ builder:
     excludes:
       - "**/localService/**"
       - "**/test/**"
-  customTasks:
-    - name: ui5-task-flatten-library
-      afterTask: generateResourcesJson
-    - name: ui5-task-zipper
-      afterTask: ui5-task-flatten-library
-      configuration:
-        archiveName: iot-errorhandler
-        additionalFiles:
-          - xs-app.json
+  # customTasks:
+  #   - name: ui5-task-flatten-library
+  #     afterTask: generateResourcesJson
+  #   - name: ui5-task-zipper
+  #     afterTask: ui5-task-flatten-library
+  #     configuration:
+  #       archiveName: iot-errorhandler
+  #       additionalFiles:
+  #         - xs-app.json
