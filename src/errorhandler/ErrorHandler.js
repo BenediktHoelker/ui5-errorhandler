@@ -53,11 +53,17 @@ sap.ui.define(
         return this.showError(new Error(this.resBundle.getText("timedOut")));
       }
 
+      if (statusCode === 401) {
+        return this.showError(
+          "Unauthorized. Please reload the page and login again."
+        );
+      }
+
       // An entity that was not found in the service is also throwing a 404 error in OData.
       // We already cover this case with a notFound target so we skip it here.
       // A request that cannot be sent to the server is a technical error that we have to handle though
       if (
-        statusCode !== "404" ||
+        statusCode !== 404 ||
         (statusCode === 404 && responseText.indexOf("Cannot POST") === 0)
       ) {
         return this.showError(responseText);
