@@ -24,7 +24,6 @@
       }
     },
     "library": {
-      "i18n": "i18n/i18n.properties",
       "css": true,
       "content": {
         "controls": [],

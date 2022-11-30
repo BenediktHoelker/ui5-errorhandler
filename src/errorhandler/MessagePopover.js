@@ -24,9 +24,9 @@ sap.ui.define(
         init(...args) {
           MessagePopover.prototype.init.apply(this, ...args);
 
-          this._resBundle = new ResourceModel({
-            bundleName: "errorhandler.i18n.i18n",
-          }).getResourceBundle();
+          this.resBundle = sap.ui
+            .getCore()
+            .getLibraryResourceBundle("errorhandler");
 
           this.attachActiveTitlePress((event) => this.focusControl(event));
         },
@@ -40,7 +40,7 @@ sap.ui.define(
             .getBindingContext()
             .getObject();
           const control = sap.ui.getCore().byId(message.getControlId());
-          
+
           if (!control || !page || typeof page.scrollToElement !== "function")
             return;
 
@@ -55,7 +55,7 @@ sap.ui.define(
         },
 
         triggerEmail() {
-          const bundle = this._resBundle;
+          const bundle = this.resBundle;
           const appComponent = this.getAppComponent();
 
           const subject = bundle.getText(
@@ -90,7 +90,7 @@ sap.ui.define(
           // falls das UserModel genutzt wird sollen die Daten des aktuellen Benutzers ausgelesen werden
           // ansonsten wird der User der Shell verwendet
           if (user) {
-            return this._resBundle.getText("userInformationLong", [
+            return this.resBundle.getText("userInformationLong", [
               user.PersonalFullName,
               user.UserName,
               user.PlantName,
@@ -98,7 +98,7 @@ sap.ui.define(
             ]);
           }
 
-          return this._resBundle.getText(
+          return this.resBundle.getText(
             "userInformationShort",
             sap.ushell.Container.getService("UserInfo").getId()
           );
@@ -134,7 +134,7 @@ sap.ui.define(
 
       this.setHeaderButton(
         new Button({
-          text: this._resBundle.getText("sendMail"),
+          text: this.resBundle.getText("sendMail"),
           press: () => this.triggerEmail(),
         })
       );

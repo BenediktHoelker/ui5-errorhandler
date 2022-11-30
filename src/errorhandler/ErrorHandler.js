@@ -9,9 +9,9 @@ sap.ui.define(
     cover(ODataModels) {
       const msgManager = this.getMessageManager();
 
-      this.resBundle = new sap.ui.model.resource.ResourceModel({
-        bundleName: "errorhandler.i18n.i18n",
-      }).getResourceBundle();
+      this.resBundle = sap.ui
+        .getCore()
+        .getLibraryResourceBundle("errorhandler");
 
       this.ErrorParser = new ErrorParser(this);
       this.msgProcessor = new sap.ui.core.message.ControlMessageProcessor();
