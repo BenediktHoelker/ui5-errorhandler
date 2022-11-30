@@ -4,7 +4,7 @@
     "id": "errorhandler",
     "type": "library",
     "applicationVersion": {
-      "version": "2.2.25"
+      "version": "2.2.26"
     },
     "title": "Errorhandler",
     "description": "Handles errors and displays them in a popup",
