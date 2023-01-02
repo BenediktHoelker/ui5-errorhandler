@@ -1,5 +1,5 @@
 {
-    "name": "@iot/ui5-errorhandler",
+    "name": "@iot-gmbh/ui5-errorhandler",
     "description": "Handle UI5- and OData-messages and display them in MessagePopover/-Box",
     "version": "0.0.0-development",
     "private": false,
