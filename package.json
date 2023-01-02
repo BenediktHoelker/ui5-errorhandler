@@ -9,6 +9,7 @@
     },
     "devDependencies": {
         "@sap/ux-ui5-tooling": "1",
+        "@semantic-release/git": "^10.0.1",
         "@ui5/cli": "^2.14.3",
         "@ui5/fs": "^2.0.6",
         "@ui5/logger": "^2.0.1",
